@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio nhóm 11</title>
+    <style>
+      /* Trang tổng của nhóm: lưới thẻ, mỗi thẻ có ảnh và dẫn tới web một thành viên */
+      body {
+        margin: 0;
+        padding: 60px 24px;
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        background-image:
+          linear-gradient(#dedbd2 1px, transparent 1px),
+          linear-gradient(90deg, #dedbd2 1px, transparent 1px);
+        background-size: 30px 30px;
+      }
+      h1 {
+        text-align: center;
+        margin: 0 0 40px;
+      }
+      .members {
+        max-width: 1000px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 30px;
+      }
+      .member {
+        display: block;
+        padding: 20px;
+        background: #fff;
+        color: #1b1b1b;
+        text-decoration: none;
+        border: 2px solid #1b1b1b;
+        border-radius: 20px;
+        box-shadow: 8px 8px 0 #1b1b1b;
+        transition: transform 0.25s ease;
+      }
+      .member:hover {
+        transform: translateY(-8px) rotate(-1deg);
+      }
+      /* Ảnh vuông, cắt gọn để mọi thẻ đều bằng nhau dù ảnh gốc to nhỏ khác nhau */
+      .member img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 12px;
+        display: block;
+        margin-bottom: 16px;
+      }
+      .member h2 {
+        margin: 0 0 8px;
+        font-size: 22px;
+      }
+      .member p {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Portfolio nhóm 11</h1>
+
+    <div class="members">
+      <!-- Mỗi thành viên một thẻ: sửa href, src, alt và tên -->
+      <a class="member" href="Thân_Đức_Tiến_075207010355/index.html">
+        <img src="Thân_Đức_Tiến_075207010355/img/anh-1.png" alt="Ảnh của Thân Đức Tiến" />
+        <h2>Thân Đức Tiến</h2>
+        <p>Xem portfolio</p>
+      </a>
+
+      <a class="member" href="Ngô Khánh Nguyên/index.html">
+        <img src="images/ban-a.jpg" alt="Ảnh của Bạn A" />
+        <h2>Ngô Khánh Nguyên</h2>
+        <p>Xem portfolio</p>
+      </a>
+
+      <a class="member" href="TEN-THU-MUC-BAN-B/index.html">
+        <img src="images/ban-b.jpg" alt="Ảnh của Bạn B" />
+        <h2>Vũ trung Hiếu</h2>
+        <p>Xem portfolio</p>
+      </a>
+      <a class="member" href="TEN-THU-MUC-BAN-B/index.html">
+        <img src="images/ban-b.jpg" alt="Ảnh của Bạn B" />
+        <h2>Vũ trung Hiếu</h2>
+        <p>Xem portfolio</p>
+      </a>
+    </div>
+  </body>
+</html>
