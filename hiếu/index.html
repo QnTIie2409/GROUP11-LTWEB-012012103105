@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trung Hiếu | Profile & Sở thích</title>
+  <meta name="description" content="Trang profile cá nhân của Trung Hiếu.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <!-- Scroll Progress Bar -->
+  <div id="scroll-progress"></div>
+
+  <!-- Header / Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+
+      <nav class="nav-menu" id="nav-menu">
+        <ul class="nav-list">
+          <li><a href="#about" class="nav-link">Giới thiệu</a></li>
+          <li><a href="#hobbies" class="nav-link">Sở thích</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="theme-toggle" class="icon-btn" aria-label="Đổi giao diện">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button id="menu-toggle" class="icon-btn mobile-only" aria-label="Mở menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <div class="status-badge">
+            <span class="status-dot"></span>
+            <span>Chào mừng bạn đến với góc nhỏ của mình</span>
+          </div>
+
+          <h1 class="hero-title">
+            Xin chào, mình là <br>
+            <span class="gradient-text">Trung Hiếu</span>
+          </h1>
+
+          <p class="hero-subtitle">
+            Mình là một <span id="typing-text" class="highlight-text"></span>
+          </p>
+
+          <p class="hero-desc">
+            Chào mừng bạn ghé thăm trang cá nhân của mình! Nơi chia sẻ đôi nét về bản thân, việc học tập tại trường và những niềm đam mê, sở thích thường ngày.
+          </p>
+
+          <div class="hero-cta">
+            <a href="#about" class="btn btn-primary">
+              <i class="fa-solid fa-user"></i> Về bản thân
+            </a>
+            <a href="#hobbies" class="btn btn-outline">
+              <i class="fa-solid fa-heart"></i> Xem sở thích
+            </a>
+          </div>
+
+          <div class="social-links">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-item" title="Facebook">
+              <i class="fa-brands fa-facebook-f"></i>
+            </a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="social-item" title="GitHub">
+              <i class="fa-brands fa-github"></i>
+            </a>
+            <a href="https://t.me" target="_blank" rel="noopener noreferrer" class="social-item" title="Telegram">
+              <i class="fa-brands fa-telegram"></i>
+            </a>
+            <a href="mailto:trunghieu@example.com" class="social-item" title="Email">
+              <i class="fa-solid fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="avatar-card">
+            <div class="avatar-glow"></div>
+            <div class="avatar-wrapper">
+              <img src="avatar.jpg" alt="Trung Hiếu Avatar" class="avatar-img" id="avatar-img">
+            </div>
+            <div class="tech-card card-top-left">
+              <i class="fa-solid fa-graduation-cap" style="color: #38bdf8;"></i>
+              <span>Sinh viên UTH</span>
+            </div>
+            <div class="tech-card card-bottom-right">
+              <i class="fa-solid fa-gamepad" style="color: #facc15;"></i>
+              <span>Game & Anime</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Khám phá</span>
+          <h2 class="section-title">Về bản thân mình</h2>
+        </div>
+
+        <div class="about-grid">
+          <div class="about-text-card">
+            <h3>Xin chào, mình là Trung Hiếu</h3>
+            <p>
+              Hiện tại mình đang là sinh viên tại Trường Đại học Giao thông Vận tải TP.HCM (UTH). Mình đang từng bước học tập, tìm tòi và phát triển kỹ năng về lập trình web.
+            </p>
+            <p>
+              Mình là người thích dành thời gian giải trí với các tựa game khó, thưởng thức những bộ anime chủ đề thú vị và đọc novel.
+            </p>
+            <div class="about-info-grid">
+              <div class="info-item">
+                <span class="info-label"><i class="fa-solid fa-graduation-cap"></i> Trường học:</span>
+                <span class="info-value">Đại học GTVT TP.HCM (UTH)</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label"><i class="fa-solid fa-code"></i> Đang học:</span>
+                <span class="info-value">Lập trình Web</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label"><i class="fa-solid fa-heart"></i> Sở thích:</span>
+                <span class="info-value text-accent">Game, Anime & Novel</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label"><i class="fa-solid fa-sparkles"></i> Phương châm:</span>
+                <span class="info-value">Mọi thứ rồi sẽ ổn thôi</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-number"><i class="fa-solid fa-user-graduate"></i></span>
+              <span class="stat-label">Sinh viên UTH</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number"><i class="fa-solid fa-laptop-code"></i></span>
+              <span class="stat-label">Học Lập trình Web</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number"><i class="fa-solid fa-gamepad"></i></span>
+              <span class="stat-label">Game Hardcore</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number"><i class="fa-solid fa-tv"></i></span>
+              <span class="stat-label">Yêu thích Anime</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hobbies Section -->
+    <section id="hobbies" class="section bg-surface">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Đam mê & Giải trí</span>
+          <h2 class="section-title">Sở thích cá nhân</h2>
+          <p class="section-desc">Những điều mang lại niềm vui, sự thư giãn và nguồn cảm hứng cho mình mỗi ngày.</p>
+        </div>
+
+        <div class="hobbies-grid">
+          <!-- Hobby 1 -->
+          <div class="hobby-card hobby-card-game">
+            <div class="hobby-card-bg"></div>
+            <div class="hobby-card-content">
+              <div class="hobby-icon">
+                <i class="fa-solid fa-gamepad"></i>
+              </div>
+              <h3 class="hobby-title">Chơi Game</h3>
+              <p class="hobby-desc">
+                Một trong những sở thích lớn nhất của mình, mình thích chơi những game offline hardcore như dòng game soulslike vì cảm giác vượt lên giới hạn bản thân mình.
+              </p>
+            </div>
+          </div>
+
+          <!-- Hobby 2 -->
+          <div class="hobby-card hobby-card-anime">
+            <div class="hobby-card-bg"></div>
+            <div class="hobby-card-content">
+              <div class="hobby-icon">
+                <i class="fa-solid fa-tv"></i>
+              </div>
+              <h3 class="hobby-title">Coi Anime</h3>
+              <p class="hobby-desc">
+                Mình rất hay dành thời gian để coi những bộ anime có chủ đề thú vị và cốt truyện sâu sắc.
+              </p>
+            </div>
+          </div>
+
+          <!-- Hobby 3 -->
+          <div class="hobby-card hobby-card-novel">
+            <div class="hobby-card-bg"></div>
+            <div class="hobby-card-content">
+              <div class="hobby-icon">
+                <i class="fa-solid fa-book-open"></i>
+              </div>
+              <h3 class="hobby-title">Đọc truyện</h3>
+              <p class="hobby-desc">
+                Thích đọc novel, manga để giải trí những lúc rảnh rỗi.
+              </p>
+            </div>
+          </div>
+
+          <!-- Hobby 4 -->
+          <div class="hobby-card hobby-card-coding">
+            <div class="hobby-card-bg"></div>
+            <div class="hobby-card-content">
+              <div class="hobby-icon">
+                <i class="fa-solid fa-code"></i>
+              </div>
+              <h3 class="hobby-title">Lập trình</h3>
+              <p class="hobby-desc">
+                Tự tay viết làm những công cụ nhỏ nhưng giúp ích cho bản thân.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <p>Trung Hiếu</p>
+      <div class="footer-links">
+        <a href="#hero">Về đầu trang <i class="fa-solid fa-arrow-up"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Custom JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
