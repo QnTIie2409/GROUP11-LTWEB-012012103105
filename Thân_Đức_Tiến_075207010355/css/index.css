@@ -1,0 +1,102 @@
+
+.hero {
+  position: relative;
+  height: 100vh; 
+  overflow: hidden; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero.leaving {
+  transition:
+    transform 0.8s ease,
+    opacity 0.8s ease;
+  transform: rotate(180deg) scale(0.2);
+  opacity: 0;
+}
+
+.hero.leaving .logo-letter,
+.hero.leaving .deco {
+  transform: none !important;
+}
+
+.decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: transform 0.5s ease;
+}
+
+.deco {
+  position: absolute;
+  width: auto;
+  transition:
+    transform 0.8s ease,
+    opacity 0.8s ease;
+}
+
+.deco-2 { left: 500px;  top: 250px;  height: 130px; z-index: 10; }
+.deco-3 { left: 1170px; top: 480px;  height: 130px; z-index: 10; }
+.deco-4 { left: 570px;  top: 810px;  height: 130px; z-index: 10; }
+.deco-5 { left: 200px;  top: -260px; height: 800px; z-index: 9; }
+.deco-6 { left: 100px;  top: 360px;  height: 800px; rotate: 15deg;  z-index: 8; }
+.deco-7 { left: 1300px; top: -300px; height: 800px; rotate: 15deg;  z-index: -11; }
+.deco-8 { left: 1280px; top: 250px;  height: 800px; rotate: -15deg; z-index: 9; }
+
+/* Animation */
+.hero:hover .deco-2 { opacity: 0.2; transform: translate(-300px, -200px) rotate(-40deg); }
+.hero:hover .deco-3 { opacity: 0.2; transform: translate(300px, 100px) rotate(20deg); }
+.hero:hover .deco-5 { opacity: 0.1; transform: translate(-200px, -100px) rotate(-10deg); }
+.hero:hover .deco-6 { opacity: 0.1; transform: translate(-200px, 200px) rotate(10deg); }
+.hero:hover .deco-7 { opacity: 0.1; transform: translate(300px, -100px) rotate(-10deg); }
+.hero:hover .deco-8 { opacity: 0.1; transform: translate(300px, 100px) rotate(20deg); }
+
+/* ===== 3. LOGO PORTFOLIO ===== */
+.hero-title {
+  margin: 0;
+  position: relative;
+}
+
+.logo-button {
+  position: relative;
+  display: block;
+  width: 800px;
+  height: 600px;
+}
+
+.logo-letter {
+  position: absolute;
+  width: auto;
+  transition: transform 0.5s ease;
+}
+
+.logo-letter:nth-child(1) { left: 0;     top: 70px;  height: 320px; z-index: 8; }
+.logo-letter:nth-child(2) { left: 60px;  top: 165px; height: 280px; z-index: 10; }
+.logo-letter:nth-child(3) { left: 160px; top: 30px;  height: 280px; z-index: 5; }
+.logo-letter:nth-child(4) { left: 175px; top: 165px; height: 280px; z-index: 5; }
+.logo-letter:nth-child(5) { left: 285px; top: 80px;  height: 390px; z-index: 4; }
+.logo-letter:nth-child(6) { left: 400px; top: 160px; height: 240px; z-index: 3; }
+.logo-letter:nth-child(7) { left: 450px; top: 70px;  height: 360px; z-index: 2; }
+.logo-letter:nth-child(8) { left: 600px; top: 120px; height: 290px; z-index: 5; }
+.logo-letter:nth-child(9) { left: 650px; top: 70px;  height: 330px; z-index: 4; }
+
+.logo-bg {
+  position: absolute;
+  left: -50px;
+  top: 55px;
+  height: 440px;
+  width: auto;
+  z-index: -10;
+}
+
+/* Animation */
+.logo-button:hover .logo-letter:nth-child(1) { transform: translate(-440px, -100px) rotate(-40deg); }
+.logo-button:hover .logo-letter:nth-child(2) { transform: translate(-250px, 250px) rotate(25deg); }
+.logo-button:hover .logo-letter:nth-child(3) { transform: translate(-250px, -250px) rotate(-62deg); }
+.logo-button:hover .logo-letter:nth-child(4) { transform: translate(-50px, 250px) rotate(80deg); }
+.logo-button:hover .logo-letter:nth-child(5) { transform: translate(-90px, -300px) rotate(40deg); }
+.logo-button:hover .logo-letter:nth-child(6) { transform: translate(50px, 300px) rotate(40deg); }
+.logo-button:hover .logo-letter:nth-child(7) { transform: translate(150px, -300px) rotate(-40deg); }
+.logo-button:hover .logo-letter:nth-child(8) { transform: translate(250px, 300px) rotate(-50deg); }
+.logo-button:hover .logo-letter:nth-child(9) { transform: translate(250px, 0px) rotate(-40deg); }
