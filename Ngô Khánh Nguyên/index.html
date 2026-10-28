@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | Trang Bìa</title>
+    <!-- Font chữ Patrick Hand cho tiêu đề PORTFOLIO giống hình mẫu -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Days+One&family=Lilita+One&family=Patrick+Hand&family=Titan+One&display=swap" rel="stylesheet">
+    <!-- CSS chính -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- TRANG BÌA PORTFOLIO (Không có Navbar) -->
+    <main class="hero-section">
+
+        <!-- 3 Chi tiết trang trí ở góc trang -->
+        <img src="image/corner1.png" alt="Denim Star Corner" class="corner-decor corner-top-left">
+        <img src="image/book.png" alt="Blue Vintage Books" class="corner-decor corner-bottom-left">
+        <img src="image/corner2.png" alt="Night Building" class="corner-decor corner-bottom-right remove-black-bg">
+
+        <!-- Chữ PORTFOLIO là liên kết chính dẫn sang trang chi tiết (portfolio.html) -->
+        <h1 class="portfolio-title" aria-label="PORTFOLIO">
+                <span>P</span><span>O</span><span>R</span><span>T</span><span>F</span><span>O</span><span>L</span><span>I</span><span>O</span>
+        </h1>
+
+        <nav class="hero-navbar" aria-label="Điều hướng chính">
+            <a href="#about" class="nav-item">About Me</a>
+            <a href="#goals" class="nav-item">Target</a>
+            <a href="#skills" class="nav-item">Skill</a>
+            <a href="#education" class="nav-item">Educational Attainment</a>
+            <a href="#projects" class="nav-item">Project</a>
+            <a href="#contact" class="nav-item">Contact</a>
+        </nav>
+
+        <!-- Cụm vật thể ở chính giữa trang (Đã thu gọn & căn đúng vị trí chồng lớp như hình mẫu) -->
+        <div class="collage-stage">
+
+            <!-- 1. Ngôi sao Denim -->
+            <div class="collage-item item-star">
+                <img src="image/star.png" alt="Denim Star">
+            </div>
+
+            <!-- 2. Máy ảnh Film -->
+            <div class="collage-item item-camera">
+                <img src="image/camera.png" alt="Vintage Camera" class="remove-black-bg">
+            </div>
+
+            <!-- 3. Sticker: CALL ME IF YOU GET LOST (Dùng hình ảnh) -->
+            <div class="collage-item item-sticker">
+                <img src="image/ovalsticker.png" alt="Call Me If You Get Lost Sticker">
+            </div>
+
+            <!-- 4. Máy nghe nhạc iPod (Dùng hình ảnh) -->
+            <div class="collage-item item-ipod">
+                <img src="image/ipod.png" alt="iPod Seven Jung Kook">
+            </div>
+
+            <!-- 5. Khung lời bài hát Spotify: seasons - wave to earth (Dùng hình ảnh) -->
+            <div class="collage-item item-seasons-card">
+                <img src="image/seasonslyrics.jpg" alt="Seasons Wave to Earth Lyrics">
+            </div>
+
+            <!-- 6. Thanh phát nhạc seasons bên dưới (Xóa khối này nếu ảnh seasons.png của bạn đã gộp chung thanh nhạc) -->
+            <div class="collage-item item-seasons-bar">
+                <img src="image/seasonplaysection.jpg" alt="Seasons Player Bar">
+            </div>
+
+            <!-- 7. Nhân vật trung tâm (Hirono Stitch) -->
+            <div class="collage-item item-character">
+                <img src="image/hirono.png" alt="Main Character">
+            </div>
+
+            <!-- 8. Tai nghe màu xanh -->
+            <div class="collage-item item-headphone">
+                <img src="image/headphone.png" alt="Blue Headphones">
+            </div>
+
+            <!-- 9. Đàn Guitar điện màu xanh -->
+            <div class="collage-item item-guitar">
+                <img src="image/guitar.png" alt="Blue Guitar">
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- JS xử lý lọc nền đen cho ảnh .jpg -->
+    <script src="js/main.js"></script>
+</body>
+</html>

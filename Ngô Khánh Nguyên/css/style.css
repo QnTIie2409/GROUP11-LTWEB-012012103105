@@ -1,0 +1,302 @@
+/* ==========================================================================
+   1. RESET CƠ BẢN
+   ========================================================================== */
+:root {
+    --title-blue: #8bb8e8;
+    --title-hover: #cbe3ff;
+    --zoom-Timing: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #10254c;
+    user-select: none;
+}
+
+/* ==========================================================================
+   2. KHUNG NỀN TRANG ĐẦU TIÊN (HERO SECTION)
+   ========================================================================== */
+.hero-section {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: 
+        url('../images/bluebg.png') center / cover no-repeat,
+        radial-gradient(circle at 50% 52%, #0c1b40 0%, #2b5082 42%, #7ba7d7 100%);
+}
+
+/* --- Các chi tiết ở 3 góc --- */
+.corner-decor {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.corner-top-left {
+    top: 0;
+    left: 0;
+    width: clamp(140px, 16.5vw, 250px);
+}
+
+.corner-bottom-left {
+    bottom: 0;
+    left: 0;
+    width: clamp(130px, 15.8vw, 240px);
+    pointer-events: auto;
+    transition: transform 0.4s var(--zoom-Timing), filter 0.3s ease;
+}
+
+.corner-bottom-left:hover {
+    transform: scale(1.08) translateY(-5px);
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45));
+}
+
+.corner-bottom-right {
+    bottom: 0;
+    right: 0;
+    width: clamp(230px, 29.2vw, 460px);
+    z-index: 3;
+}
+
+/* ==========================================================================
+   3. CHỮ "PORTFOLIO" LÀ LIÊN KẾT CHÍNH + HIỆU ỨNG HOVER ZOOM
+   ========================================================================== */
+.portfolio-title {
+    position: absolute;
+    top: 1.2vh;
+    left: 50%;
+    transform: translateX(-50%) scale(1);
+    z-index: 30;
+    text-decoration: none;
+    font-family: 'Titan One', 'Lilita One', sans-serif;
+    font-size: clamp(3.2rem, 8.2vw, 6.5rem);
+    line-height: 1;
+    letter-spacing: 3px;
+    color: var(--title-blue);
+    display: inline-flex;
+    cursor: pointer;
+    filter: drop-shadow(0 6px 14px rgba(7, 19, 44, 0.35));
+    transition: transform 0.42s var(--zoom-Timing), filter 0.35s ease;
+}
+
+/* Hiệu ứng phóng to toàn bộ chữ PORTFOLIO khi di chuột vào */
+.portfolio-title:hover {
+    transform: translateX(-50%) scale(1.12);
+    filter: drop-shadow(0 12px 24px rgba(139, 184, 232, 0.55));
+}
+
+/* Hiệu ứng nhấp nhô từng chữ cái khi lướt chuột qua */
+.portfolio-title span {
+    display: inline-block;
+    transition: transform 0.3s var(--zoom-Timing), color 0.25s ease;
+}
+
+.portfolio-title span:hover {
+    transform: scale(1.18) translateY(-6px);
+    color: var(--title-hover);
+}
+
+/* ==========================================================================
+   4. CỤM VẬT THỂ CHÍNH GIỮA TRANG (ĐÃ GOM SÁT GIỐNG HÌNH MẪU)
+   ========================================================================== */
+.collage-stage {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Khóa tỷ lệ 600:387 chuẩn theo cụm trung tâm của Portfolio.jpg để các vật thể luôn chụm sát nhau */
+    height: 72.5vh;
+    aspect-ratio: 600 / 387;
+    max-width: 96vw;
+    z-index: 10;
+}
+
+.collage-item {
+    position: absolute;
+    cursor: pointer;
+    --base-rotate: 0deg;
+    transform: rotate(var(--base-rotate)) scale(1);
+    transform-origin: center center;
+    transition: 
+        transform 0.4s var(--zoom-Timing),
+        filter 0.35s ease;
+    filter: drop-shadow(0 6px 14px rgba(5, 14, 35, 0.35));
+}
+
+.collage-item img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* Hiệu ứng Zoom lên khi di chuột vào bất kỳ vật thể nào ở giữa trang */
+.collage-item:hover {
+    transform: rotate(var(--base-rotate)) scale(1.15) translateY(-5px);
+    filter: drop-shadow(0 16px 28px rgba(4, 10, 28, 0.65));
+    z-index: 50 !important;
+}
+
+/* --------------------------------------------------------------------------
+   TỌA ĐỘ & LỚP XẾP CHỒNG (Z-INDEX) CỦA TỪNG VẬT THỂ (KHỚP 100% PORTFOLIO.JPG)
+   Lưu ý: Nếu ảnh sticker.png hoặc ipod.png của bạn đã xoay nghiêng sẵn trong
+   file ảnh gốc, hãy đổi --base-rotate của mục đó thành 0deg.
+   -------------------------------------------------------------------------- */
+   
+/* ==========================================================================
+   THANH NAVBAR DƯỚI CHỮ PORTFOLIO
+   ========================================================================== */
+.hero-navbar {
+    position: absolute;
+    top: 17.5vh; /* Nằm ngay dưới chữ PORTFOLIO và phía trên cụm vật thể */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 35;
+    display: flex;
+    align-items: center;
+    gap: clamp(6px, 1.2vw, 16px);
+    padding: 6px 18px;
+    background: rgba(16, 37, 76, 0.42);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(139, 184, 232, 0.38);
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(7, 19, 44, 0.3);
+    white-space: nowrap;
+}
+
+.hero-navbar .nav-item {
+    font-family: 'Patrick Hand', cursive, sans-serif;
+    font-size: clamp(1rem, 1.5vw, 1.35rem);
+    letter-spacing: 1px;
+    color: #dbeaff;
+    text-decoration: none;
+    padding: 4px 12px;
+    border-radius: 999px;
+    transition: 
+        transform 0.3s var(--zoom-Timing),
+        background-color 0.25s ease,
+        color 0.25s ease;
+}
+
+.hero-navbar .nav-item:hover {
+    background-color: rgba(139, 184, 232, 0.3);
+    color: #ffffff;
+    transform: scale(1.12) translateY(-2px);
+}
+
+/* Tương thích màn hình nhỏ */
+@media (max-width: 768px) {
+    .hero-navbar {
+        top: 13vh;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: max-content;
+        max-width: 92vw;
+        padding: 6px 12px;
+    }
+}
+
+/* 1. Ngôi sao Denim (nằm sau máy ảnh & góc trên trái thẻ seasons) */
+.item-star {
+    left: 2.0%;
+    top: 13.5%;
+    width: 18.0%;
+    --base-rotate: 0deg;
+    z-index: 4;
+}
+
+/* 2. Máy ảnh Film (nằm trước cánh phải ngôi sao, sau mép trái sticker) */
+.item-camera {
+    left: 18.0%;
+    top: 9.3%;
+    width: 15.7%;
+    --base-rotate: 0deg;
+    z-index: 6;
+}
+
+/* 3. Sticker "CALL ME IF YOU GET LOST" (nghiêng -30 độ, đè nhẹ lên góc phải máy ảnh) */
+.item-sticker {
+    left: 32.2%;
+    top: 7.5%;
+    width: 20.5%;
+    --base-rotate: -30deg; /* Đổi thành 0deg nếu file sticker.png đã nghiêng sẵn */
+    z-index: 8;
+}
+
+/* 4. Máy nghe nhạc iPod (nghiêng 21 độ, nằm phía sau đầu nhân vật & tai nghe) */
+.item-ipod {
+    left: 50.6%;
+    top: 13.5%;
+    width: 45.0%;
+    --base-rotate: 21deg; /* Đổi thành 0deg nếu file ipod.png đã nghiêng sẵn */
+    z-index: 5;
+}
+
+/* 5. Thẻ lời bài hát Spotify (seasons - wave to earth) (mép phải nằm sau mũ nhân vật) */
+.item-seasons-card {
+    left: 12.7%;
+    top: 26.4%;
+    width: 26.7%;
+    --base-rotate: 0deg;
+    z-index: 6;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+/* 6. Thanh phát nhạc Spotify bên dưới (mép phải nằm sau chân nhân vật) */
+.item-seasons-bar {
+    left: 11.5%;
+    top: 72.5%;
+    width: 29.2%;
+    --base-rotate: 0deg;
+    z-index: 7;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+/* 7. Nhân vật chính Hirono Stitch (nằm ở lớp trên cùng chính giữa) */
+.item-character {
+    left: 32.2%;
+    top: 24.5%;
+    width: 35.5%;
+    --base-rotate: 0deg;
+    z-index: 12;
+}
+
+/* 8. Tai nghe (nghiêng 25 độ, gác lên iPod và nằm sau mũ bên phải của nhân vật) */
+.item-headphone {
+    left: 64.8%;
+    top: 42.3%;
+    width: 16.2%;
+    --base-rotate: 25deg;
+    z-index: 9;
+}
+
+/* 9. Đàn Guitar (nằm góc dưới phải của cụm trung tâm, đè lên góc dưới iPod) */
+.item-guitar {
+    left: 64.0%;
+    top: 48.3%;
+    width: 31.3%;
+    --base-rotate: 0deg;
+    z-index: 11;
+}
+
+/* ==========================================================================
+   5. TƯƠNG THÍCH MÀN HÌNH NHỎ (RESPONSIVE)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .collage-stage {
+        height: auto;
+        width: 94vw;
+        bottom: 6vh;
+    }
+}
