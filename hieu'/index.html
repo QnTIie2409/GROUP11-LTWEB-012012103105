@@ -3,249 +3,318 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trung Hiếu | Profile & Sở thích</title>
-  <meta name="description" content="Trang profile cá nhân của Trung Hiếu.">
+  <title>VŨ TRUNG HIẾU — Profile & Portfolio</title>
+  <meta name="description" content="Vũ Trung Hiếu.">
 
-  <!-- Google Fonts -->
+  <!-- Typography: Space Grotesk (Display), Plus Jakarta Sans (Sans), JetBrains Mono (Tech) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- Custom CSS -->
+  <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="dark-theme">
-  <!-- Scroll Progress Bar -->
-  <div id="scroll-progress"></div>
+<body class="theme-ground">
 
-  <!-- Header / Navigation -->
-  <header class="navbar">
-    <div class="nav-container">
+  <!-- 1. NAVIGATION -->
+  <header class="site-nav" id="main-nav">
+    <div class="nav-inner">
+      <a href="#hero-portal" class="nav-brand" aria-label="Trang chủ Vũ Trung Hiếu">
+        HIEU<span class="accent-dot-amber">.</span>
+      </a>
 
-      <nav class="nav-menu" id="nav-menu">
-        <ul class="nav-list">
-          <li><a href="#about" class="nav-link">Giới thiệu</a></li>
-          <li><a href="#hobbies" class="nav-link">Sở thích</a></li>
-        </ul>
+      <nav class="nav-links" aria-label="Menu chính">
+        <a href="#statement" class="nav-link">GIỚI THIỆU</a>
+        <a href="#roster" class="nav-link">KỸ NĂNG & DỰ ÁN</a>
+        <a href="#catalogue" class="nav-link">SỞ THÍCH</a>
+        <a href="#close" class="nav-link">KẾT NỐI</a>
       </nav>
 
-      <div class="nav-actions">
-        <button id="theme-toggle" class="icon-btn" aria-label="Đổi giao diện">
-          <i class="fa-solid fa-moon"></i>
-        </button>
-        <button id="menu-toggle" class="icon-btn mobile-only" aria-label="Mở menu">
-          <i class="fa-solid fa-bars"></i>
-        </button>
+      <div class="nav-cta">
+        <a href="https://github.com/hieuvnj" target="_blank" rel="noopener noreferrer" class="nav-pill-btn">
+          GITHUB // @HIEUVNJ
+        </a>
       </div>
     </div>
   </header>
 
-  <main>
-    <!-- Hero Section -->
-    <section id="hero" class="hero-section">
-      <div class="container hero-grid">
-        <div class="hero-content">
-          <div class="status-badge">
-            <span class="status-dot"></span>
-            <span>Chào mừng bạn đến với góc nhỏ của mình</span>
-          </div>
+  <!-- 2. PORTAL HERO (2.5 Viewports tall, sticky 100vh stage) -->
+  <section id="hero-portal" class="portal-section" aria-label="Portal Hero">
+    <div class="portal-sticky-stage" id="portal-stage">
 
-          <h1 class="hero-title">
-            Xin chào, mình là <br>
-            <span class="gradient-text">Trung Hiếu</span>
-          </h1>
+      <!-- Layer 1: Full-bleed Hero Photography (Moody analog audio studio) -->
+      <div class="hero-image-wrap" id="hero-img-wrap">
+        <img
+          src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=2400&q=85"
+          alt="Không gian làm việc công nghệ"
+          class="hero-bleed-img"
+          id="hero-bleed-img"
+        >
+      </div>
 
-          <p class="hero-subtitle">
-            Mình là một <span id="typing-text" class="highlight-text"></span>
-          </p>
+      <!-- Layer 2: Duotone Wash blending Amber and Teal at mix-blend-mode overlay -->
+      <div class="hero-duotone-wash" id="hero-duotone"></div>
 
-          <p class="hero-desc">
-            Chào mừng bạn ghé thăm trang cá nhân của mình! Nơi chia sẻ đôi nét về bản thân, việc học tập tại trường và những niềm đam mê, sở thích thường ngày.
-          </p>
+      <!-- Layer 3: Radial Veil darkening the edges -->
+      <div class="hero-radial-veil"></div>
 
-          <div class="hero-cta">
-            <a href="#about" class="btn btn-primary">
-              <i class="fa-solid fa-user"></i> Về bản thân
-            </a>
-            <a href="#hobbies" class="btn btn-outline">
-              <i class="fa-solid fa-heart"></i> Xem sở thích
-            </a>
-          </div>
+      <!-- Layer 4: Two Solid Panels (meet in the middle, hero begins closed) -->
+      <div class="portal-panel panel-left" id="panel-left"></div>
+      <div class="portal-panel panel-right" id="panel-right"></div>
 
-          <div class="social-links">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-item" title="Facebook">
-              <i class="fa-brands fa-facebook-f"></i>
-            </a>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="social-item" title="GitHub">
-              <i class="fa-brands fa-github"></i>
-            </a>
-            <a href="https://t.me" target="_blank" rel="noopener noreferrer" class="social-item" title="Telegram">
-              <i class="fa-brands fa-telegram"></i>
-            </a>
-            <a href="mailto:trunghieu@example.com" class="social-item" title="Email">
-              <i class="fa-solid fa-envelope"></i>
-            </a>
-          </div>
+      <!-- Layer 5: Two Traveling Accent Dots (Amber & Teal) -->
+      <div class="accent-dot dot-amber" id="dot-amber"></div>
+      <div class="accent-dot dot-teal" id="dot-teal"></div>
+
+      <!-- Layer 6: Wordmark split into two spans that travel and tighten -->
+      <div class="portal-title-layer" id="portal-title-layer">
+        <h1 class="portal-wordmark" id="portal-wordmark">
+          <span class="wm-span wm-left" id="wm-left">PRO</span>
+          <span class="wm-span wm-right" id="wm-right">FILE</span>
+        </h1>
+      </div>
+
+      <!-- Layer 7: Corner Metadata pinned to edges -->
+      <div class="portal-meta meta-top-left">
+        <span class="meta-label">VŨ TRUNG HIẾU // CNTT K24</span>
+      </div>
+      <div class="portal-meta meta-top-right">
+        <span class="meta-label">UTH // SAIGON</span>
+      </div>
+      <div class="portal-meta meta-bottom-left">
+        <span class="meta-label">MSSV: 075206005360</span>
+      </div>
+      <div class="portal-meta meta-bottom-right">
+        <span class="meta-scroll-cue">CUỘN ĐỂ MỞ CÁNH CỔNG <span class="rule-indicator"></span></span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 3. STATEMENT FOLD (Full-height section with clamp statement & drifting circular image) -->
+  <section id="statement" class="section statement-section" aria-label="Giới thiệu bản thân">
+    <div class="container statement-container">
+
+      <div class="statement-content">
+        <div class="section-badge-row">
+          <span class="section-tag-teal">01 // BẢN THÂN</span>
+          <span class="hairline-rule"></span>
         </div>
 
-        <div class="hero-visual">
-          <div class="avatar-card">
-            <div class="avatar-glow"></div>
-            <div class="avatar-wrapper">
-              <img src="avatar.jpg" alt="Trung Hiếu Avatar" class="avatar-img" id="avatar-img">
-            </div>
-            <div class="tech-card card-top-left">
-              <i class="fa-solid fa-graduation-cap" style="color: #38bdf8;"></i>
-              <span>Sinh viên UTH</span>
-            </div>
-            <div class="tech-card card-bottom-right">
-              <i class="fa-solid fa-gamepad" style="color: #facc15;"></i>
-              <span>Game & Anime</span>
-            </div>
-          </div>
+        <p class="statement-lead">
+          Sinh viên Khoa Công nghệ Thông tin (K24) - Trường Đại học Giao thông Vận tải TP.HCM
+        </p>
+      </div>
+
+      <!-- Circular floating image drifting and rotating on scroll (Trung Hiếu Avatar) -->
+      <div class="statement-orb-wrap" id="statement-orb-wrap">
+        <div class="statement-orb" id="statement-orb">
+          <img
+            src="avatar.jpg"
+            alt="Chân dung Vũ Trung Hiếu"
+            class="orb-img"
+          >
         </div>
       </div>
-    </section>
 
-    <!-- About Section -->
-    <section id="about" class="section">
-      <div class="container">
-        <div class="section-header">
-          <span class="section-tag">Khám phá</span>
-          <h2 class="section-title">Về bản thân mình</h2>
+    </div>
+  </section>
+
+  <!-- 4. ROSTER (Hairline-ruled rows) -->
+  <section id="roster" class="section roster-section" aria-label="Kỹ năng & dự án">
+    <div class="container roster-container">
+
+      <!-- Hairline Roster Rows (Kỹ năng & DỰ ÁN) -->
+      <div class="roster-block">
+        <div class="section-badge-row">
+          <span class="section-tag-teal">02 // KỸ NĂNG & DỰ ÁN</span>
+          <span class="hairline-rule"></span>
         </div>
 
-        <div class="about-grid">
-          <div class="about-text-card">
-            <h3>Xin chào, mình là Trung Hiếu</h3>
-            <p>
-              Hiện tại mình đang là sinh viên tại Trường Đại học Giao thông Vận tải TP.HCM (UTH). Mình đang từng bước học tập, tìm tòi và phát triển kỹ năng về lập trình web.
+        <div class="roster-table">
+          <div class="roster-row">
+            <span class="roster-badge teal">DEV-01</span>
+            <h3 class="roster-name">C++</h3>
+          </div>
+
+          <div class="roster-row">
+            <span class="roster-badge amber">DEV-02</span>
+            <h3 class="roster-name">PYTHON</h3>
+          </div>
+
+          <div class="roster-row project-row">
+            <div class="project-row-head">
+              <span class="roster-badge amber">DEV-03</span>
+              <h3 class="roster-name">NOVEL TRANSLATION CLI</h3>
+            </div>
+            <div class="project-media-middle">
+              <img src="ntc-logo.png" alt="Novel Translation CLI - NTC" class="project-preview-img">
+            </div>
+            <p class="project-desc">
+              Dự án cào và dịch truyện hàng loạt từ web rồi dịch bằng model do Google cung cấp cùng glossary tự cập nhật để giữ nhất quán trong quá trình dịch.
             </p>
-            <p>
-              Mình là người thích dành thời gian giải trí với các tựa game khó, thưởng thức những bộ anime chủ đề thú vị và đọc novel.
-            </p>
-            <div class="about-info-grid">
-              <div class="info-item">
-                <span class="info-label"><i class="fa-solid fa-graduation-cap"></i> Trường học:</span>
-                <span class="info-value">Đại học GTVT TP.HCM (UTH)</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label"><i class="fa-solid fa-code"></i> Đang học:</span>
-                <span class="info-value">Lập trình Web</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label"><i class="fa-solid fa-heart"></i> Sở thích:</span>
-                <span class="info-value text-accent">Game, Anime & Novel</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label"><i class="fa-solid fa-sparkles"></i> Phương châm:</span>
-                <span class="info-value">Mọi thứ rồi sẽ ổn thôi</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="stats-grid">
-            <div class="stat-card">
-              <span class="stat-number"><i class="fa-solid fa-user-graduate"></i></span>
-              <span class="stat-label">Sinh viên UTH</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-number"><i class="fa-solid fa-laptop-code"></i></span>
-              <span class="stat-label">Học Lập trình Web</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-number"><i class="fa-solid fa-gamepad"></i></span>
-              <span class="stat-label">Game Hardcore</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-number"><i class="fa-solid fa-tv"></i></span>
-              <span class="stat-label">Yêu thích Anime</span>
-            </div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Hobbies Section -->
-    <section id="hobbies" class="section bg-surface">
-      <div class="container">
-        <div class="section-header">
-          <span class="section-tag">Đam mê & Giải trí</span>
-          <h2 class="section-title">Sở thích cá nhân</h2>
-          <p class="section-desc">Những điều mang lại niềm vui, sự thư giãn và nguồn cảm hứng cho mình mỗi ngày.</p>
+    </div>
+  </section>
+
+  <!-- 5. RELEASES & THROWABLE CARD DECK (3 Sleeves: Game, Anime, Novel) -->
+  <section id="catalogue" class="section catalogue-section" aria-label="Bộ sưu tập đĩa vật lý">
+    <div class="container catalogue-container">
+
+      <!-- Left Column: Headline, Lede, Actions -->
+      <div class="catalogue-intro">
+        <div class="section-badge-row">
+          <span class="section-tag-amber">03 // BỘ SƯU TẬP</span>
+          <span class="hairline-rule"></span>
         </div>
 
-        <div class="hobbies-grid">
-          <!-- Hobby 1 -->
-          <div class="hobby-card hobby-card-game">
-            <div class="hobby-card-bg"></div>
-            <div class="hobby-card-content">
-              <div class="hobby-icon">
-                <i class="fa-solid fa-gamepad"></i>
-              </div>
-              <h3 class="hobby-title">Chơi Game</h3>
-              <p class="hobby-desc">
-                Một trong những sở thích lớn nhất của mình, mình thích chơi những game offline hardcore như dòng game soulslike vì cảm giác vượt lên giới hạn bản thân mình.
-              </p>
-            </div>
-          </div>
+        <h2 class="catalogue-headline">SỞ THÍCH</h2>
 
-          <!-- Hobby 2 -->
-          <div class="hobby-card hobby-card-anime">
-            <div class="hobby-card-bg"></div>
-            <div class="hobby-card-content">
-              <div class="hobby-icon">
-                <i class="fa-solid fa-tv"></i>
-              </div>
-              <h3 class="hobby-title">Coi Anime</h3>
-              <p class="hobby-desc">
-                Mình rất hay dành thời gian để coi những bộ anime có chủ đề thú vị và cốt truyện sâu sắc.
-              </p>
-            </div>
-          </div>
 
-          <!-- Hobby 3 -->
-          <div class="hobby-card hobby-card-novel">
-            <div class="hobby-card-bg"></div>
-            <div class="hobby-card-content">
-              <div class="hobby-icon">
-                <i class="fa-solid fa-book-open"></i>
-              </div>
-              <h3 class="hobby-title">Đọc truyện</h3>
-              <p class="hobby-desc">
-                Thích đọc novel, manga để giải trí những lúc rảnh rỗi.
-              </p>
-            </div>
-          </div>
+        <div class="catalogue-controls">
+          <button type="button" class="btn-outline-pill" id="deck-prev-btn" aria-label="Xem lại đĩa trước">
+            ← PREVIOUS
+          </button>
+          <button type="button" class="btn-outline-pill" id="deck-next-btn" aria-label="Ném đĩa sang bên">
+            NEXT →
+          </button>
+        </div>
 
-          <!-- Hobby 4 -->
-          <div class="hobby-card hobby-card-coding">
-            <div class="hobby-card-bg"></div>
-            <div class="hobby-card-content">
-              <div class="hobby-icon">
-                <i class="fa-solid fa-code"></i>
-              </div>
-              <h3 class="hobby-title">Lập trình</h3>
-              <p class="hobby-desc">
-                Tự tay viết làm những công cụ nhỏ nhưng giúp ích cho bản thân.
-              </p>
+        <div class="deck-status-meta">
+          <div class="status-indicator">
+            <span class="dot-indicator-teal"></span>
+            <span class="status-text" id="deck-active-title">GM-01 // GAME HARDCORE</span>
+          </div>
+          <span class="deck-counter" id="deck-counter">01 / 3</span>
+        </div>
+      </div>
+
+      <!-- Right Column: Throwable Card Deck Stage -->
+      <div class="catalogue-stage">
+        <div
+          class="deck-stack"
+          id="throwable-deck"
+          tabindex="0"
+          role="region"
+          aria-label="Bộ thẻ đĩa vật lý. Dùng phím mũi tên trái/phải hoặc kéo thả để ném."
+        >
+
+          <!-- Sleeve 1: Game (Sekiro) -->
+          <article class="sleeve-card" data-index="0" data-code="GM-01" data-name="GAME HARDCORE">
+            <div class="sleeve-art">
+              <img src="game-bg.jpg" alt="Sekiro: Shadows Die Twice">
+              <div class="sleeve-grain-veil"></div>
             </div>
+            <div class="sleeve-spine">
+              <span class="spine-code">GM-01</span>
+              <span class="spine-format">PC OFFLINE // SOULSLIKE</span>
+            </div>
+            <div class="sleeve-meta">
+              <span class="meta-tag">SỞ THÍCH #01</span>
+              <h3 class="sleeve-title">CHƠI GAME</h3>
+              <p class="sleeve-sub">Chinh phục những game offline độ khó cao như dòng soulslike vì cảm giác vượt lên giới hạn bản thân.</p>
+              <div class="sleeve-footer">
+                <span class="sleeve-run">#SOULSLIKE #SEKIRO</span>
+                <span class="sleeve-rpm">HARDCORE</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Sleeve 2: Anime (Steins;Gate) -->
+          <article class="sleeve-card" data-index="1" data-code="AN-02" data-name="ANIME ARCHIVE">
+            <div class="sleeve-art">
+              <img src="anime-bg.jpg" alt="Steins;Gate Future Gadget Lab">
+              <div class="sleeve-grain-veil"></div>
+            </div>
+            <div class="sleeve-spine">
+              <span class="spine-code">AN-02</span>
+              <span class="spine-format">ANIMATION // SCI-FI</span>
+            </div>
+            <div class="sleeve-meta">
+              <span class="meta-tag">SỞ THÍCH #02</span>
+              <h3 class="sleeve-title">COI ANIME</h3>
+              <p class="sleeve-sub">Thưởng thức những bộ anime có cốt truyện sâu sắc, độc đáo và thú vị.</p>
+              <div class="sleeve-footer">
+                <span class="sleeve-run">#ANIME #STEINS;GATE</span>
+                <span class="sleeve-rpm">OTAKU</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Sleeve 3: Novel & Manga -->
+          <article class="sleeve-card" data-index="2" data-code="NV-03" data-name="NOVEL & MANGA">
+            <div class="sleeve-art">
+              <img src="novel-bg.jpg" alt="Light Novel Wallpaper">
+              <div class="sleeve-grain-veil"></div>
+            </div>
+            <div class="sleeve-spine">
+              <span class="spine-code">NV-03</span>
+              <span class="spine-format">LITERATURE // MANGA</span>
+            </div>
+            <div class="sleeve-meta">
+              <span class="meta-tag">SỞ THÍCH #03</span>
+              <h3 class="sleeve-title">ĐỌC TRUYỆN</h3>
+              <p class="sleeve-sub">Đắm chìm vào những bộ light novel và manga kỳ ảo để giải trí và mở rộng trí tưởng tượng.</p>
+              <div class="sleeve-footer">
+                <span class="sleeve-run">#LIGHTNOVEL #MANGA</span>
+                <span class="sleeve-rpm">READING</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- Deck Hint and Progress Dots -->
+        <div class="deck-footer-row">
+          <div class="deck-dots" id="deck-dots" aria-hidden="true">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
           </div>
         </div>
       </div>
-    </section>
-  </main>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container footer-content">
-      <p>Trung Hiếu</p>
-      <div class="footer-links">
-        <a href="#hero">Về đầu trang <i class="fa-solid fa-arrow-up"></i></a>
+    </div>
+  </section>
+
+  <!-- 6. CLOSE (Short headline, fine print, button, hairline strip, cropped giant wordmark) -->
+  <footer class="close-section" id="close">
+    <div class="container close-container">
+
+      <div class="close-top-row">
+        <div class="close-headline-wrap">
+          <span class="section-tag-teal">04 // KẾT NỐI</span>
+          <h2 class="close-headline">RẤT VUI ĐƯỢC LÀM QUEN</h2>
+          <p class="close-fine-print">
+            Sinh viên Khoa Công nghệ Thông tin K24 - Trường Đại học Giao thông Vận tải TP.HCM (UTH) // MSSV: 075206005360.
+          </p>
+        </div>
+
+        <div class="close-actions">
+          <a href="https://github.com/hieuvnj" target="_blank" rel="noopener noreferrer" class="btn-outline-pill">
+            <i class="fa-brands fa-github"></i> GITHUB // @HIEUVNJ
+          </a>
+        </div>
       </div>
+
+      <!-- Hairline Footer Strip -->
+      <div class="close-footer-strip">
+        <span class="footer-meta">© 2026 VŨ TRUNG HIẾU</span>
+        <span class="footer-meta">KHOA CNTT K24 // UTH</span>
+        <span class="footer-meta">MSSV: 075206005360</span>
+      </div>
+
+    </div>
+
+    <!-- The Giant Wordmark Cropped by Page Edge -->
+    <div class="close-cropped-wordmark-wrap" aria-hidden="true">
+      <div class="close-giant-wordmark">VŨ TRUNG HIẾU</div>
     </div>
   </footer>
 
