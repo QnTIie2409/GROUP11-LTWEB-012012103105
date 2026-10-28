@@ -87,3 +87,12 @@ nav button {
   position: absolute;
   left: 1700px;
 }
+nav {
+  flex-wrap: wrap; 
+}
+
+@media (max-width: 600px) {
+  header { padding: 16px; }
+  nav { gap: 10px; }
+  nav a, nav button { padding: 6px 12px; font-size: 14px; }
+}

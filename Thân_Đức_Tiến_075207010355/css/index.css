@@ -100,3 +100,15 @@
 .logo-button:hover .logo-letter:nth-child(7) { transform: translate(150px, -300px) rotate(-40deg); }
 .logo-button:hover .logo-letter:nth-child(8) { transform: translate(250px, 300px) rotate(-50deg); }
 .logo-button:hover .logo-letter:nth-child(9) { transform: translate(250px, 0px) rotate(-40deg); }
+.stage {
+  --scale: 1;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1875px;
+  height: 925px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translate(-50%, -50%) scale(var(--scale));
+}
