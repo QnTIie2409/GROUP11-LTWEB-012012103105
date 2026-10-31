@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Me - Ngô Khánh Nguyên</title>
+    <!-- Google Fonts: Anton/Oswald cho chữ đậm bản mẫu, Patrick Hand cho nút Back, Be Vietnam Pro cho nội dung -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Days+One&family=Lilita+One&family=Patrick+Hand&family=Titan+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/object.css">
+</head>
+<body>
+
+    <!-- I.1 HEADER / NAVBAR -->
+    <header class="site-header" id="top">
+        <nav class="navbar container" aria-label="Điều hướng chính">
+            <!-- Nút Hamburger cho Mobile (Chức năng tương tác 1) -->
+            <button class="menu-toggle" id="menuToggle" aria-label="Mở menu" aria-expanded="false">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#about-section" class="nav-link active">About Me</a></li>
+                <li><a href="#profile-tabs-section" class="nav-link">Định hướng & Học vấn</a></li>
+                <li><a href="#skills-section" class="nav-link">Kỹ năng</a></li>
+                <li><a href="#projects-section" class="nav-link">Dự án</a></li>
+                <li><a href="#contact-section" class="nav-link">Liên hệ</a></li>
+                <li><a href="index.html" class="nav-btn-back">← Trang chủ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- I.2 GIỚI THIỆU BẢN THÂN (THIẾT KẾ GIỐNG HỆT BẢN MẪU PORTFOLIO (1).jpg) -->
+        <section class="hero-stage" id="about-section">
+            <div class="about-card">
+
+                <!-- 4 Sticker trang trí ở 4 góc (Click để mở Modal câu chuyện đam mê) -->
+                <button type="button" class="sticker sticker-camera" data-hobby="camera" title="Nhấn để xem đam mê Quay chụp">
+                    <img src="image/camera.png" alt="Camera sticker" id="cameraImg">
+                </button>
+
+                <button type="button" class="sticker sticker-star" data-hobby="star" title="Nhấn để xem Hoài bão & Mục tiêu">
+                    <img src="image/doublestar.png" alt="Double star sticker">
+                </button>
+
+                <button type="button" class="sticker sticker-football" data-hobby="football" title="Nhấn để xem đam mê Thể thao">
+                    <img src="image/football.png" alt="Football sticker">
+                </button>
+
+                <button type="button" class="sticker sticker-guitar" data-hobby="guitar" title="Nhấn để xem đam mê Âm nhạc">
+                    <img src="image/guitar.png" alt="Guitar sticker">
+                </button>
+
+                <!-- Bố cục bên trong Card -->
+                <div class="card-inner">
+                    <!-- Cột trái: Ảnh đại diện + Ghim cài -->
+                    <div class="photo-column">
+                        <div class="photo-frame">
+                            <!-- Tự động dùng avatar.jpg nếu có, nếu không sẽ tự cắt chuẩn khung ảnh từ PORTFOLIO (1).jpg -->
+                            <img 
+                                src="image/me.jfif" 
+                                alt="Chân dung Ngô Khánh Nguyên" 
+                                class="portrait-img"
+                                onerror="this.onerror=null; this.src='images/PORTFOLIO (1).jpg'; this.classList.add('crop-from-mockup');"
+                            >
+                        </div>
+                        <img src="image/pinitem.png" alt="Pin icon" class="pin-icon" id="pinImg">
+                    </div>
+
+                    <!-- Cột phải: Tiêu đề About me, hộp thông tin 2 cột và nút Back -->
+                    <div class="info-column">
+                        <h1 class="about-title">About me</h1>
+
+                        <div class="bio-box">
+                            <div class="bio-details">
+                                <p>Name: Ngô Khánh Nguyên</p>
+                                <p>Age: 19</p>
+                                <p>Birthday: 15-03-2007</p>
+                                <p>Gender: Men</p>
+                                <p>From: Hồ Chí Minh</p>
+                                <p>Field of study: IT</p>
+                            </div>
+
+                            <div class="bio-divider" aria-hidden="true"></div>
+
+                            <div class="bio-story">
+                                <p>
+                                    Tôi là Nguyên, 1 chàng trai 19 tuổi mang trong mình rất nhiều hoài bão cùng những đam mê, nào là ca hát, nào là quay chụp, hay là thể thao. Nhưng tôi biết rằng mình cần phải tập trung vào 1 thứ nên tôi chọn con đường này vì nó sẽ giúp tôi kiếm đủ tiền để nuôi những đam mê khác của mình.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- I.3, I.5, I.7: MỤC TIÊU NGHỀ NGHIỆP, HỌC VẤN/HOẠT ĐỘNG, CHỨNG CHỈ/SỞ THÍCH (TÍCH HỢP TABS TƯƠNG TÁC) -->
+        <section class="content-section container" id="profile-tabs-section">
+            <div class="glass-panel">
+                <div class="section-header">
+                    <h2 class="section-title">Hồ Sơ & Định Hướng Cá Nhân</h2>
+                    <p class="section-subtitle">Nhấn vào từng thẻ bên dưới để khám phá mục tiêu nghề nghiệp, học vấn và sở thích của mình</p>
+                </div>
+
+                <!-- Chức năng tương tác 2: Tabs chuyển đổi nội dung -->
+                <div class="tabs-nav" role="tablist">
+                    <button class="tab-btn active" role="tab" aria-selected="true" data-tab="tab-career">
+                        🎯 Mục tiêu nghề nghiệp
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-education">
+                        🎓 Học vấn & Hoạt động
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-certificates">
+                        🏆 Chứng chỉ & Sở thích
+                    </button>
+                </div>
+
+                <!-- Nội dung Tab 1: Mục tiêu nghề nghiệp -->
+                <article class="tab-panel active" id="tab-career" role="tabpanel">
+                    <div class="grid-two-cols">
+                        <div class="info-card">
+                            <h3>🚀 Mục tiêu ngắn hạn (2026 – 2027)</h3>
+                            <ul class="custom-list">
+                                <li>Nắm vững kiến thức nền tảng ngành Công nghệ Thông tin (Cấu trúc dữ liệu, Cơ sở dữ liệu SQL, Mạng máy tính, Phân tích thiết kế hệ thống).</li>
+                                <li>Thành thạo lập trình Front-End với <strong>HTML5, CSS3, JavaScript</strong> và xây dựng các ứng dụng web tương tác mượt mà.</li>
+                                <li>Hoàn thiện các dự án thực tế cá nhân và nhóm để tích lũy kinh nghiệm làm việc chuyên nghiệp.</li>
+                            </ul>
+                        </div>
+                        <div class="info-card">
+                            <h3>🌟 Mục tiêu dài hạn (2028+)</h3>
+                            <ul class="custom-list">
+                                <li>Trở thành một <strong>Full-Stack Web Developer</strong> chuyên nghiệp, có khả năng thiết kế và vận hành các sản phẩm công nghệ hoàn chỉnh.</li>
+                                <li>Đạt được sự tự chủ tài chính vững vàng từ công việc lập trình để nuôi dưỡng các đam mê nghệ thuật (âm nhạc, quay dựng video, thể thao).</li>
+                                <li>Đóng góp giá trị cho cộng đồng thông qua các dự án công nghệ và hoạt động tình nguyện xã hội.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Nội dung Tab 2: Học vấn / Kinh nghiệm / Hoạt động -->
+                <article class="tab-panel" id="tab-education" role="tabpanel">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <span class="timeline-date">2025 – Hiện tại</span>
+                            <h3>Sinh viên ngành Công nghệ Thông tin (IT)</h3>
+                            <p class="timeline-place">Trường Đại học Giao thông vận tải TP.HCM (UTH)</p>
+                            <p>Theo học chuyên ngành Công nghệ Thông tin; nghiên cứu lập trình Web Front-End, C++, Cơ sở dữ liệu quan hệ (SQL), Kiến trúc máy tính và Phân tích thiết kế hệ thống.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <span class="timeline-date">06/2026 – Hiện tại</span>
+                            <h3>Thành viên Đội cổ vũ – Verdancy Cheerleading Squad</h3>
+                            <p class="timeline-place">Hoạt động CLB & Nghệ thuật</p>
+                            <p>Vượt qua vòng Casting chính thức, tham gia tập luyện vũ đạo, rèn luyện kỹ năng làm việc nhóm, kỷ luật và biểu diễn sân khấu.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <span class="timeline-date">2026</span>
+                            <h3>Tình nguyện viên & Tổ chức dự án thiện nguyện Bước Chân Nhỏ</h3>
+                            <p class="timeline-place">Chiến dịch thiện nguyện Hạ Thương và Giáng sinh cho em</p>
+                            <p>Tham gia lập kế hoạch chiến dịch truyền thông và tổ chức chương trình thiện nguyện Giáng sinh hỗ trợ trẻ em có hoàn cảnh khó khăn.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Nội dung Tab 3: Chứng chỉ / Giải thưởng / Sở thích -->
+                <article class="tab-panel" id="tab-certificates" role="tabpanel">
+                    <div class="grid-two-cols">
+                        <div class="info-card">
+                            <h3>📜 Chứng chỉ & Thành tích</h3>
+                            <ul class="custom-list">
+                                <li><strong>Chứng nhận hoàn thành khóa học C++ Programming:</strong> Cấp bởi nền tảng học lập trình trực tuyến Codelearn.</li>
+                                <li><strong>Chứng nhận vượt qua vòng Tuyển chọn (Casting):</strong> Thành viên chính thức đội cổ vũ Verdancy Cheerleading Squad (2026).</li>
+                                <li><strong>Giải thưởng chuyên ngành:</strong> Đang trong quá trình phấn đấu và chinh phục tại giảng đường đại học.</li>
+                            </ul>
+                        </div>
+                        <div class="info-card">
+                            <h3>🎸 Sở thích cá nhân</h3>
+                            <div class="hobby-badges">
+                                <span class="badge" data-hobby="guitar">🎵 Ca hát & Chơi Guitar / Làm nhạc (FL Studio, BandLab)</span>
+                                <span class="badge" data-hobby="camera">🎬 Quay chụp & Edit Video ngắn (CapCut PC)</span>
+                                <span class="badge" data-hobby="football">⚽ Thể thao (Bóng đá, Bóng chuyền, Chạy bộ)</span>
+                                <span class="badge" data-hobby="star">💃 Vũ đạo Urban Dance / K-Pop & Lập trình sáng tạo</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- I.4 KỸ NĂNG (SKILLS) -->
+        <section class="content-section container" id="skills-section">
+            <div class="glass-panel">
+                <div class="section-header">
+                    <h2 class="section-title">Kỹ Năng Chuyên Môn & Công Cụ</h2>
+                    <p class="section-subtitle">Các công nghệ lập trình và công cụ sáng tạo mình đang sử dụng</p>
+                </div>
+
+                <div class="skills-grid">
+                    <div class="skill-card">
+                        <div class="skill-info">
+                            <span>HTML5 & Semantic Markup</span>
+                            <span>85%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 85%;"></div></div>
+                    </div>
+
+                    <div class="skill-card">
+                        <div class="skill-info">
+                            <span>CSS3 (Flexbox, Grid, Responsive, Animation)</span>
+                            <span>80%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 80%;"></div></div>
+                    </div>
+
+                    <div class="skill-card">
+                        <div class="skill-info">
+                            <span>JavaScript (DOM, Events, ES6+)</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 75%;"></div></div>
+                    </div>
+
+                    <div class="skill-card">
+                        <div class="skill-info">
+                            <span>Ngôn ngữ C++ & Cấu trúc dữ liệu</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 75%;"></div></div>
+                    </div>
+
+                    <div class="skill-card">
+                        <div class="skill-info">
+                            <span>Cơ sở dữ liệu SQL & Beekeeper Studio</span>
+                            <span>70%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 70%;"></div></div>
+                    </div>
+
+                    <div class="skill-card">
+                        <div class="skill-info">
+                            <span>Quay dựng Video (CapCut PC) & Âm nhạc</span>
+                            <span>85%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 85%;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- I.6 DỰ ÁN CÁ NHÂN (CÓ BỘ LỌC FILTER & MODAL XEM CHI TIẾT) -->
+        <section class="content-section container" id="projects-section">
+            <div class="glass-panel">
+                <div class="section-header">
+                    <h2 class="section-title">Dự Án Cá Nhân Tiêu Biểu</h2>
+                    <p class="section-subtitle">Tối thiểu 2+ dự án thực tế kết hợp lập trình Web và hoạt động cộng đồng</p>
+                </div>
+
+                <!-- Chức năng tương tác 3: Bộ lọc dự án (Project Filter) -->
+                <div class="filter-controls" role="group" aria-label="Bộ lọc dự án">
+                    <button class="filter-btn active" data-filter="all">Tất cả</button>
+                    <button class="filter-btn" data-filter="webapp">Web App</button>
+                    <button class="filter-btn" data-filter="uiux">UI/UX & Portfolio</button>
+                    <button class="filter-btn" data-filter="community">Cộng đồng</button>
+                </div>
+
+                <div class="projects-grid" id="projectsGrid">
+                    <!-- Dự án 1 -->
+                    <article class="project-card" data-category="webapp">
+                        <div class="project-thumb">
+                            <img src="image/violetstreak.jpg" alt="Habit-Wealth-Loop Dashboard">
+                            <span class="project-tag">Web App</span>
+                        </div>
+                        <div class="project-body">
+                            <h3>Habit-Wealth-Loop Dashboard</h3>
+                            <p>Ứng dụng theo dõi thói quen mỗi ngày (chuỗi streak hàng tuần) kết hợp bảng điều khiển quản lý chi tiêu cá nhân.</p>
+                            <div class="tech-stack">
+                                <span>HTML5</span>
+                                <span>CSS3</span>
+                                <span>JavaScript</span>
+                                <span>Node.js / PWA</span>
+                            </div>
+                            <div class="project-actions">
+                                <button type="button" class="btn-detail" data-project="project1">Xem chi tiết</button>
+                                <a href="https://habit-wealth-loop.ai.studio/" class="btn-outline">Demo Link ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Dự án 2 -->
+                    <article class="project-card" data-category="uiux">
+                        <div class="project-thumb">
+                            <img src="image/PORTFOLIO (2).png" alt="Scrapbook Personal & Team Portfolio">
+                            <span class="project-tag">UI/UX & Portfolio</span>
+                        </div>
+                        <div class="project-body">
+                            <h3>Scrapbook Personal & Team Portfolio</h3>
+                            <p>Hệ thống trang web giới thiệu bản thân và cổng liên kết thành viên nhóm theo phong cách Y2K Scrapbook xanh dương.</p>
+                            <div class="tech-stack">
+                                <span>Semantic HTML5</span>
+                                <span>CSS Grid/Flex</span>
+                                <span>Vanilla JS</span>
+                            </div>
+                            <div class="project-actions">
+                                <button type="button" class="btn-detail" data-project="project2">Xem chi tiết</button>
+                                <a href="index.html" class="btn-outline">Trang cá nhân ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Dự án 3 -->
+                    <article class="project-card" data-category="community">
+                        <div class="project-thumb">
+                            <img src="image/bước chân nhỏ.jpg" alt="Bước Chân Nhỏ">
+                            <span class="project-tag">Cộng đồng</span>
+                        </div>
+                        <div class="project-body">
+                            <h3>Landing Page Bước Chân Nhỏ</h3>
+                            <p>Trang thông tin truyền thông và kết nối tình nguyện viên Bước Chân Nhỏ.</p>
+                            <div class="tech-stack">
+                                <span>Facebook</span>
+                            </div>
+                            <div class="project-actions">
+                                <button type="button" class="btn-detail" data-project="project3">Xem chi tiết</button>
+                                <a href="https://www.facebook.com/profile.php?id=61559827868531" class="btn-outline">Đăng ký ↗</a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- III.15 FORM LIÊN HỆ (CÓ KIỂM TRA DỮ LIỆU BẰNG JAVASCRIPT) -->
+        <section class="content-section container" id="contact-section">
+            <div class="glass-panel">
+                <div class="section-header">
+                    <h2 class="section-title">Liên Hệ Với Nguyên</h2>
+                    <p class="section-subtitle">Hãy để lại lời nhắn nếu bạn muốn hợp tác làm dự án IT, giao lưu âm nhạc hoặc thể thao!</p>
+                </div>
+
+                <div class="contact-layout">
+                    <aside class="contact-direct">
+                        <h3>Thông tin kết nối</h3>
+                        <p><strong>👤 Họ và tên:</strong> Ngô Khánh Nguyên</p>
+                        <p><strong>🎂 Ngày sinh:</strong> 15-03-2007</p>
+                        <p><strong>📍 Địa chỉ:</strong> TP. Thủ Đức, TP. Hồ Chí Minh</p>
+                        <p><strong>🏫 Trường học:</strong> ĐH Giao thông vận tải TP.HCM (UTH)</p>
+                        <p><strong>💬 Discord:</strong> _mawnkay</p>
+                        <p><strong>Instagram:</strong> knquiez._</p>
+                        <p><strong>Facebook:</strong> Khánh Nguyên Ngô</p>
+                        <div class="back-home-box">
+                            <a href="index.html" class="btn-primary-back">← Quay về trang index.html</a>
+                        </div>
+                    </aside>
+
+                    <form id="contactForm" class="contact-form" novalidate>
+                        <div class="form-group">
+                            <label for="fullName">Họ và tên của bạn *</label>
+                            <input type="text" id="fullName" name="fullName" placeholder="Nhập họ và tên (VD: Đặng Quốc Bình)">
+                            <small class="error-msg" id="nameError"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Địa chỉ Email *</label>
+                            <input type="email" id="email" name="email" placeholder="example@gmail.com">
+                            <small class="error-msg" id="emailError"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject">Chủ đề *</label>
+                            <select id="subject" name="subject">
+                                <option value="">-- Chọn chủ đề liên hệ --</option>
+                                <option value="it">Hợp tác dự án Lập trình / IT</option>
+                                <option value="media">Quay chụp / Dựng video / Âm nhạc</option>
+                                <option value="sport">Giao lưu Thể thao</option>
+                                <option value="other">Nội dung khác</option>
+                            </select>
+                            <small class="error-msg" id="subjectError"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Nội dung tin nhắn *</label>
+                            <textarea id="message" name="message" rows="4" placeholder="Nhập nội dung tin nhắn (tối thiểu 10 ký tự)..."></textarea>
+                            <small class="error-msg" id="messageError"></small>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Gửi Tin Nhắn ✉️</button>
+                        <div id="formSuccess" class="form-success" hidden></div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p>© 2026 Thiết kế & Lập trình bởi <strong>Ngô Khánh Nguyên</strong> (IT - UTH).</p>
+        </div>
+    </footer>
+
+    <!-- CHỨC NĂNG TƯƠNG TÁC 4: MODAL HIỂN THỊ CHI TIẾT DỰ ÁN & CÂU CHUYỆN ĐAM MÊ -->
+    <div class="modal-overlay" id="infoModal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal-box">
+            <button type="button" class="modal-close" id="modalClose" aria-label="Đóng hộp thoại">&times;</button>
+            <span class="modal-badge" id="modalBadge">Chi tiết</span>
+            <h3 class="modal-title" id="modalTitle">Tiêu đề</h3>
+            <p class="modal-desc" id="modalDesc">Nội dung chi tiết...</p>
+            <div class="modal-meta" id="modalMeta"></div>
+        </div>
+    </div>
+
+    <!-- CHỨC NĂNG TƯƠNG TÁC 5: NÚT SCROLL TO TOP -->
+    <button type="button" class="scroll-top-btn" id="scrollTopBtn" aria-label="Cuộn lên đầu trang" title="Lên đầu trang">
+        ↑
+    </button>
+
+    <script src="js/object.js"></script>
+</body>
+</html>
