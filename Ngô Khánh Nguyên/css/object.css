@@ -1,0 +1,1082 @@
+/* ==========================================================================
+   1. NHÚNG FONT iCiel Crocante.otf & THIẾT LẬP TOÀN TRANG
+   ========================================================================== */
+@font-face {
+    font-family: 'iCiel Crocante';
+    src: local('iCiel Crocante'),
+         url('../iCiel Crocante.otf') format('opentype'),
+         url('../fonts/iCiel Crocante.otf') format('opentype'),
+         url('./iCiel Crocante.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --navy-dark: #1d3557;
+    --blue-primary: #2b6cb0;
+    --blue-card-tint: rgba(92, 152, 204, 0.52);
+    --text-black: #080b10;
+    --text-white: #f8fafc;
+    --glass-bg: rgba(218, 236, 252, 0.88);
+    --glass-border: rgba(255, 255, 255, 0.65);
+    --shadow-card: 0 20px 50px rgba(8, 20, 44, 0.45);
+
+    /* Đồng bộ toàn bộ biến phông chữ sang iCiel Crocante */
+    --font-main: 'iCiel Crocante', sans-serif;
+    --font-heading: 'iCiel Crocante', sans-serif;
+    --font-condensed: 'iCiel Crocante', sans-serif;
+    --font-hand: 'iCiel Crocante', sans-serif;
+    --font-body: 'iCiel Crocante', sans-serif;
+
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-main);
+    font-weight: normal; /* Giữ nét chữ nguyên bản sắc nét của iCiel Crocante */
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-main);
+    color: var(--text-black);
+    background-color: #2c4765;
+    background-image: url('../image/darkblue\ background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.5;
+    letter-spacing: 0.4px;
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: var(--font-main);
+    letter-spacing: 0.4px;
+}
+
+.container {
+    width: min(1160px, 92%);
+    margin: 0 auto;
+}
+
+/* ==========================================================================
+   2. HEADER / NAVBAR
+   ========================================================================== */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    background: rgba(24, 46, 76, 0.82);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+}
+
+.brand-logo {
+    font-size: 1.8rem;
+    color: #ffffff;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+.brand-logo span {
+    color: #7cc4fa;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 1.25rem;
+}
+
+.nav-link {
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 1.15rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #ffffff;
+    background: rgba(124, 196, 250, 0.22);
+}
+
+.nav-btn-back {
+    background: #7cc4fa;
+    color: #0b192c;
+    text-decoration: none;
+    font-size: 1.1rem;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    transition: var(--transition);
+}
+
+.nav-btn-back:hover {
+    background: #ffffff;
+    transform: translateY(-2px);
+}
+
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.menu-toggle .bar {
+    width: 26px;
+    height: 3px;
+    background-color: #ffffff;
+    border-radius: 3px;
+    transition: var(--transition);
+}
+
+/* ==========================================================================
+   3. KHU VỰC ABOUT ME CARD (CHUẨN BẢN MẪU PORTFOLIO (1).jpg)
+   ========================================================================== */
+.hero-stage {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4.5rem 2rem;
+}
+
+.about-card {
+    position: relative;
+    width: min(1060px, 90vw);
+    min-height: 560px;
+    background-image: url('../image/bluebackgroud.jpg');
+    background-size: cover;
+    background-position: center;
+    box-shadow: var(--shadow-card);
+    padding: 2.6rem 3.2rem 2rem;
+    display: flex;
+    align-items: stretch;
+}
+
+/* 4 Sticker góc trên bản mẫu */
+.sticker {
+    position: absolute;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 20;
+    transition: transform 0.35s ease, filter 0.35s ease;
+    padding: 0;
+}
+
+.sticker img {
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
+}
+
+.sticker-camera {
+    top: -42px;
+    left: -48px;
+    width: 135px;
+    transform: rotate(-36deg);
+    animation: floatCamera 4.5s ease-in-out infinite;
+}
+
+.sticker-camera:hover {
+    transform: rotate(-28deg) scale(1.12);
+}
+
+.sticker-star {
+    top: -46px;
+    right: -45px;
+    width: 145px;
+    transform: rotate(6deg);
+    animation: floatStar 4s ease-in-out infinite;
+}
+
+.sticker-star:hover {
+    transform: rotate(16deg) scale(1.12);
+}
+
+.sticker-football {
+    bottom: -62px;
+    left: -58px;
+    width: 170px;
+    animation: floatBall 5s ease-in-out infinite;
+}
+
+.sticker-football:hover {
+    transform: rotate(-15deg) scale(1.1);
+}
+
+.sticker-guitar {
+    bottom: -48px;
+    right: -52px;
+    width: 215px;
+    animation: floatGuitar 4.8s ease-in-out infinite;
+}
+
+.sticker-guitar:hover {
+    transform: rotate(-8deg) scale(1.08);
+}
+
+/* Bố cục 2 cột trong Card */
+.card-inner {
+    display: grid;
+    grid-template-columns: 335px 1fr;
+    gap: 2.8rem;
+    width: 100%;
+    align-items: center;
+}
+
+.photo-column {
+    position: relative;
+    width: 335px;
+    height: fit-content; /* Bỏ height: 100% để ghim không bị bay lên trên */
+    margin: 0 auto;
+}
+
+.photo-frame {
+    width: 100%;
+    height: 465px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+    background: #1e293b;
+    transition: var(--transition);
+}
+
+.photo-frame:hover {
+    transform: rotate(-1deg) scale(1.01);
+}
+
+.portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.portrait-img.crop-from-mockup {
+    object-fit: none;
+    width: 377%;
+    height: 149%;
+    max-width: none;
+    margin-left: -50.2%;
+    margin-top: -26.8%;
+}
+
+.pin-icon {
+    position: absolute;
+    top: -28px;          /* Hạ ghim xuống sát mép trên khung ảnh */
+    right: -26px;        /* Căn mũi nhọn của ghim đâm đúng vào góc phải ảnh */
+    width: 68px;
+    height: auto;
+    z-index: 15;
+    pointer-events: none;
+    filter: drop-shadow(2px 6px 8px rgba(0, 0, 0, 0.35));
+}
+
+/* Cột phải: Tiêu đề About me + Khung thông tin (Đã cố định vị trí khi bỏ nút Back) */
+.info-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    padding-top: 0;
+    padding-bottom: 2.2rem; /* Giữ khung chữ cân đối ở giữa giống bản mẫu */
+}
+
+.about-title {
+    font-size: clamp(3.4rem, 5.8vw, 5.1rem);
+    color: #000000;
+    text-align: center;
+    letter-spacing: 1px;
+    line-height: 1.05;
+    margin-bottom: 1.2rem;
+}
+
+.bio-box {
+    background: var(--blue-card-tint);
+    backdrop-filter: blur(6px);
+    border-radius: 20px;
+    padding: 1.8rem 2rem;
+    display: grid;
+    grid-template-columns: 1.15fr 3px 1.15fr; /* Mở rộng nhẹ cột trái để chữ nằm gọn trên 1 dòng */
+    gap: 1.5rem;
+    align-items: center;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.bio-details p {
+    font-size: 1.38rem;
+    color: #05070a;
+    line-height: 1.5;
+    letter-spacing: 0.4px;
+    white-space: nowrap; /* Giữ từng mục thông tin trên đúng 1 dòng */
+}
+
+.bio-divider {
+    width: 3px;
+    height: 92%;
+    background-color: #000000;
+    border-radius: 2px;
+}
+
+.bio-story p {
+    font-size: 1.05rem;
+    color: #05070a;
+    line-height: 1.42;
+    text-align: left;
+    letter-spacing: 0.3px;
+}
+
+/* Ẩn nút Back nhưng không làm xê dịch bố cục nếu bạn vẫn giữ thẻ trong HTML */
+.card-footer-action {
+    display: none;
+}
+
+/* ==========================================================================
+   4. CÁC SECTION NỘI DUNG BỔ SUNG THEO FILE ĐIỀU KIỆN.XLSX
+   ========================================================================== */
+.content-section {
+    padding: 2.5rem 0;
+}
+
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 2.8rem;
+    box-shadow: var(--shadow-card);
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 2.2rem;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    color: var(--navy-dark);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.section-subtitle {
+    color: #334155;
+    margin-top: 0.4rem;
+    font-size: 1.2rem;
+}
+
+/* TABS CHUYỂN ĐỔI */
+.tabs-nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+}
+
+.tab-btn {
+    font-size: 1.2rem;
+    padding: 0.75rem 1.4rem;
+    border-radius: 12px;
+    border: 2px solid rgba(43, 108, 176, 0.25);
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--navy-dark);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.tab-btn:hover,
+.tab-btn.active {
+    background: var(--navy-dark);
+    color: #ffffff;
+    border-color: var(--navy-dark);
+    transform: translateY(-2px);
+}
+
+.tab-panel {
+    display: none;
+    animation: fadeIn 0.35s ease;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+.grid-two-cols {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.info-card {
+    background: rgba(255, 255, 255, 0.78);
+    padding: 1.6rem;
+    border-radius: 16px;
+    border-left: 5px solid var(--blue-primary);
+}
+
+.info-card h3 {
+    color: var(--navy-dark);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.custom-list {
+    padding-left: 1.2rem;
+}
+
+.custom-list li {
+    margin-bottom: 0.65rem;
+    color: #1e293b;
+    font-size: 1.15rem;
+}
+
+/* Timeline Học vấn & Hoạt động */
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    border-left: 3px solid var(--blue-primary);
+    padding-left: 1.5rem;
+    margin-left: 0.5rem;
+}
+
+.timeline-item {
+    background: rgba(255, 255, 255, 0.78);
+    padding: 1.3rem 1.6rem;
+    border-radius: 14px;
+    position: relative;
+    font-size: 1.15rem;
+}
+
+.timeline-item h3 {
+    font-size: 1.45rem;
+    color: var(--navy-dark);
+}
+
+.timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -1.95rem;
+    top: 1.5rem;
+    width: 14px;
+    height: 14px;
+    background: var(--blue-primary);
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+}
+
+.timeline-date {
+    display: inline-block;
+    background: var(--navy-dark);
+    color: #ffffff;
+    font-size: 1rem;
+    padding: 0.2rem 0.8rem;
+    border-radius: 99px;
+    margin-bottom: 0.4rem;
+}
+
+.timeline-place {
+    color: var(--blue-primary);
+    margin-bottom: 0.4rem;
+    font-size: 1.15rem;
+}
+
+.hobby-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.badge {
+    background: #e0f2fe;
+    color: var(--navy-dark);
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    font-size: 1.15rem;
+    cursor: pointer;
+    border: 1px solid #bae6fd;
+    transition: var(--transition);
+}
+
+.badge:hover {
+    background: var(--navy-dark);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* KỸ NĂNG (SKILLS) */
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.4rem;
+}
+
+.skill-card {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 1.2rem 1.4rem;
+    border-radius: 14px;
+}
+
+.skill-info {
+    display: flex;
+    justify-content: space-between;
+    color: var(--navy-dark);
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #cbd5e1;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--navy-dark), #3b82f6);
+    border-radius: 99px;
+}
+
+/* DỰ ÁN CÁ NHÂN (PROJECTS) */
+.filter-controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-bottom: 2rem;
+}
+
+.filter-btn {
+    padding: 0.55rem 1.3rem;
+    border-radius: 99px;
+    border: 1px solid var(--navy-dark);
+    background: transparent;
+    color: var(--navy-dark);
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+    background: var(--navy-dark);
+    color: #ffffff;
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.6rem;
+}
+
+.project-card {
+    background: rgba(255, 255, 255, 0.88);
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.project-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+}
+
+.project-thumb {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+}
+
+.project-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.project-card:hover .project-thumb img {
+    transform: scale(1.06);
+}
+
+.project-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--navy-dark);
+    color: #ffffff;
+    font-size: 0.95rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+}
+
+.project-body {
+    padding: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.project-body h3 {
+    color: var(--navy-dark);
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+}
+
+.project-body p {
+    color: #334155;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+}
+
+.tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.2rem;
+}
+
+.tech-stack span {
+    background: #dbeafe;
+    color: #1e40af;
+    font-size: 0.95rem;
+    padding: 0.22rem 0.65rem;
+    border-radius: 6px;
+}
+
+.project-actions {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.btn-detail,
+.btn-outline {
+    flex: 1;
+    text-align: center;
+    padding: 0.55rem 0.8rem;
+    border-radius: 8px;
+    font-size: 1.08rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.btn-detail {
+    background: var(--navy-dark);
+    color: #ffffff;
+    border: none;
+}
+
+.btn-detail:hover {
+    background: var(--blue-primary);
+}
+
+.btn-outline {
+    border: 1px solid var(--navy-dark);
+    color: var(--navy-dark);
+}
+
+.btn-outline:hover {
+    background: #e2e8f0;
+}
+
+/* FORM LIÊN HỆ */
+.contact-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 2rem;
+}
+
+.contact-direct {
+    background: rgba(255, 255, 255, 0.78);
+    padding: 1.8rem;
+    border-radius: 16px;
+    font-size: 1.18rem;
+}
+
+.contact-direct h3 {
+    color: var(--navy-dark);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.contact-direct p {
+    margin-bottom: 0.75rem;
+    color: #1e293b;
+}
+
+.back-home-box {
+    margin-top: 1.6rem;
+}
+
+.btn-primary-back {
+    display: inline-block;
+    background: var(--navy-dark);
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.15rem;
+    padding: 0.7rem 1.3rem;
+    border-radius: 10px;
+    transition: var(--transition);
+}
+
+.btn-primary-back:hover {
+    background: var(--blue-primary);
+    transform: translateX(-4px);
+}
+
+.contact-form {
+    background: rgba(255, 255, 255, 0.85);
+    padding: 1.8rem;
+    border-radius: 16px;
+}
+
+.form-group {
+    margin-bottom: 1.1rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--navy-dark);
+    margin-bottom: 0.35rem;
+    font-size: 1.15rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    transition: var(--transition);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.18);
+}
+
+.error-msg {
+    color: #dc2626;
+    font-size: 1rem;
+    display: block;
+    min-height: 1.1rem;
+    margin-top: 0.2rem;
+}
+
+.btn-submit {
+    width: 100%;
+    background: var(--navy-dark);
+    color: #ffffff;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 10px;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-submit:hover {
+    background: var(--blue-primary);
+}
+
+.form-success {
+    margin-top: 1rem;
+    padding: 0.85rem;
+    border-radius: 10px;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 1.15rem;
+    text-align: center;
+}
+
+/* FOOTER */
+.site-footer {
+    background: rgba(15, 29, 49, 0.9);
+    color: #e2e8f0;
+    padding: 1.4rem 0;
+    margin-top: 2rem;
+    font-size: 1.15rem;
+}
+
+.footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.footer-back-link {
+    font-size: 1.4rem;
+    color: #7cc4fa;
+    text-decoration: none;
+}
+
+/* MODAL & SCROLL TO TOP */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(9, 18, 34, 0.72);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition);
+    padding: 1rem;
+}
+
+.modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-box {
+    background: #ffffff;
+    width: min(540px, 95%);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+    transform: translateY(20px);
+    transition: var(--transition);
+}
+
+.modal-overlay.open .modal-box {
+    transform: translateY(0);
+}
+
+.modal-close {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #64748b;
+}
+
+.modal-badge {
+    display: inline-block;
+    background: #dbeafe;
+    color: var(--navy-dark);
+    font-size: 1rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    margin-bottom: 0.6rem;
+}
+
+.modal-title {
+    color: var(--navy-dark);
+    font-size: 1.8rem;
+    margin-bottom: 0.8rem;
+}
+
+.modal-desc {
+    color: #334155;
+    font-size: 1.18rem;
+    margin-bottom: 1rem;
+}
+
+.modal-meta {
+    background: #f1f5f9;
+    padding: 0.9rem 1.1rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    color: #1e293b;
+}
+
+.scroll-top-btn {
+    position: fixed;
+    bottom: 26px;
+    right: 26px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--navy-dark);
+    color: #ffffff;
+    border: 2px solid #7cc4fa;
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition);
+    z-index: 800;
+}
+
+.scroll-top-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.scroll-top-btn:hover {
+    background: var(--blue-primary);
+    transform: translateY(-4px);
+}
+
+/* ==========================================================================
+   5. KEYFRAMES ANIMATION
+   ========================================================================== */
+@keyframes floatCamera {
+    0%, 100% { transform: rotate(-36deg) translateY(0); }
+    50% { transform: rotate(-33deg) translateY(-7px); }
+}
+
+@keyframes floatStar {
+    0%, 100% { transform: rotate(6deg) translateY(0); }
+    50% { transform: rotate(10deg) translateY(-8px); }
+}
+
+@keyframes floatBall {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+@keyframes floatGuitar {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-7px) rotate(-3deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   6. RESPONSIVE (DESKTOP, TABLET, MOBILE)
+   ========================================================================== */
+@media (max-width: 992px) {
+    .card-inner {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .photo-frame {
+        max-width: 340px;
+        height: 420px;
+        margin: 0 auto;
+    }
+
+    .pin-icon {
+        right: calc(50% - 185px);
+    }
+
+    .projects-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .contact-layout,
+    .grid-two-cols,
+    .skills-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: rgba(18, 35, 58, 0.97);
+        flex-direction: column;
+        padding: 1.2rem;
+        gap: 0.8rem;
+        display: none;
+    }
+
+    .nav-links.show {
+        display: flex;
+    }
+
+    .about-card {
+        padding: 2rem 1.4rem;
+    }
+
+    .info-column {
+        padding-bottom: 2rem;
+    }
+
+    .bio-box {
+        grid-template-columns: 1fr;
+        padding: 1.5rem;
+    }
+
+    .bio-divider {
+        width: 100%;
+        height: 2px;
+    }
+
+    .sticker-camera,
+    .sticker-star {
+        width: 95px;
+    }
+
+    .sticker-football {
+        width: 115px;
+        bottom: -40px;
+        left: -30px;
+    }
+
+    .sticker-guitar {
+        width: 140px;
+        bottom: -35px;
+        right: -25px;
+    }
+
+    .projects-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .glass-panel {
+        padding: 1.6rem 1.2rem;
+    }
+}
