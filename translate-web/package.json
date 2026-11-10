@@ -1,0 +1,19 @@
+{
+  "name": "translate-web",
+  "version": "1.0.0",
+  "description": "Translate Web with Google Lens OCR",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "files": [
+    "app.js",
+    "index.html",
+    "languages.js",
+    "server.mjs",
+    "style.css",
+    "translator.js"
+  ],
+  "dependencies": {
+    "chrome-lens-ocr": "^4.1.1"
+  }
+}
