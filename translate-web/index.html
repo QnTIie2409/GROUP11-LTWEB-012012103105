@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Translate Web with Google Lens OCR and Text-to-Speech">
+  <title>lingo studio. — Words without borders</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a73e8'%3E%3Cpath d='M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
+          <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
+        </svg>
+        <span class="logo-title"><span class="brand-name">lingo studio.</span></span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="brand-tagline">Words without borders</span>
+      <button type="button" id="themeToggleBtn" class="icon-btn" title="Chuyển đổi giao diện sáng/tối" aria-label="Chuyển đổi giao diện sáng/tối">
+        <svg class="theme-icon theme-icon-dark" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+          <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+        </svg>
+        <svg class="theme-icon theme-icon-light" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+          <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+        </svg>
+      </button>
+      <button type="button" id="historyToggleBtn" class="icon-btn" title="Lịch sử dịch" aria-label="Mở lịch sử dịch">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+          <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <section class="studio-intro" aria-labelledby="studioTitle">
+      <p class="eyebrow">A little language goes a long way</p>
+      <h1 id="studioTitle">Find the right words,<br>wherever you are.</h1>
+      <p class="intro-description">A simple space for everyday English and Vietnamese phrases. Type a<br class="desktop-break"> familiar expression or start with one below.</p>
+      <div class="language-art" aria-hidden="true"><span>A</span><i></i><span>あ</span></div>
+    </section>
+    <div class="workspace-card">
+
+      <nav class="language-bar" aria-label="Bộ chọn ngôn ngữ dịch">
+
+        <div class="language-section source-section">
+          <div id="sourceTabs" class="language-tabs" role="tablist" aria-label="Ngôn ngữ nguồn phổ biến">
+            <button type="button" class="lang-tab active" data-lang="auto" role="tab" aria-selected="true">Phát hiện ngôn ngữ</button>
+            <button type="button" class="lang-tab" data-lang="vi" role="tab" aria-selected="false">Tiếng Việt</button>
+            <button type="button" class="lang-tab" data-lang="en" role="tab" aria-selected="false">Tiếng Anh</button>
+            <button type="button" class="lang-tab" data-lang="zh-CN" role="tab" aria-selected="false">Tiếng Trung</button>
+          </div>
+          <button type="button" id="sourceDropdownBtn" class="dropdown-btn" title="Tất cả ngôn ngữ nguồn" aria-label="Mở danh sách ngôn ngữ nguồn" aria-haspopup="dialog">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <path d="M7 10l5 5 5-5z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="swap-section">
+          <button type="button" id="swapBtn" class="icon-btn swap-btn" title="Chuyển đổi ngôn ngữ" aria-label="Chuyển đổi ngôn ngữ">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+              <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="language-section target-section">
+          <div id="targetTabs" class="language-tabs" role="tablist" aria-label="Ngôn ngữ đích phổ biến">
+            <button type="button" class="lang-tab active" data-lang="vi" role="tab" aria-selected="true">Tiếng Việt</button>
+            <button type="button" class="lang-tab" data-lang="en" role="tab" aria-selected="false">Tiếng Anh</button>
+            <button type="button" class="lang-tab" data-lang="zh-CN" role="tab" aria-selected="false">Tiếng Trung</button>
+            <button type="button" class="lang-tab" data-lang="ja" role="tab" aria-selected="false">Tiếng Nhật</button>
+          </div>
+          <button type="button" id="targetDropdownBtn" class="dropdown-btn" title="Tất cả ngôn ngữ đích" aria-label="Mở danh sách ngôn ngữ đích" aria-haspopup="dialog">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <path d="M7 10l5 5 5-5z"/>
+            </svg>
+          </button>
+        </div>
+      </nav>
+
+      <div class="panels-container">
+
+        <section class="panel source-panel" aria-label="Khung nhập văn bản nguồn">
+          <div class="panel-body">
+            <label class="panel-label" for="sourceText">Your words</label>
+            <textarea
+              id="sourceText"
+              class="source-textarea"
+              placeholder="Type a phrase, or choose an example below…"
+              maxlength="5000"
+              spellcheck="false"
+              aria-label="Văn bản nguồn"
+            ></textarea>
+          </div>
+          <div class="panel-footer source-footer">
+            <div class="footer-actions-left">
+              <button type="button" id="translateBtn" class="translate-phrase-btn">Translate phrase <span aria-hidden="true">→</span></button>
+              <input type="file" id="imageUploadInput" accept="image/*" class="hidden" aria-hidden="true">
+              <button type="button" id="uploadImageBtn" class="icon-btn" title="Tải ảnh lên nhận diện chữ (OCR)" aria-label="Tải ảnh lên nhận diện chữ (OCR)">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                </svg>
+              </button>
+              <button type="button" id="sourceListenBtn" class="icon-btn" title="Nghe phát âm" aria-label="Nghe phát âm">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+              </button>
+            </div>
+            <div class="footer-actions-right">
+              <button type="button" id="clearBtn" class="clear-phrase-btn" title="Xóa văn bản">Clear</button>
+              <span id="charCount" class="char-count" aria-live="polite">0 / 5.000</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel target-panel" aria-label="Khung hiển thị bản dịch">
+          <div class="panel-body">
+            <div class="translation-heading"><h2>Translation</h2><span class="translation-status">● Live translation</span></div>
+            <div id="detectedLangBadge" class="detected-lang-badge hidden" aria-live="polite"></div>
+            <div id="loadingSpinner" class="loading-spinner hidden" aria-label="Đang dịch..." role="status">
+              <svg class="spinner-svg" viewBox="0 0 50 50" width="32" height="32" aria-hidden="true">
+                <circle class="spinner-circle" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+              </svg>
+            </div>
+            <div
+              id="targetText"
+              class="target-text"
+              placeholder="Your translation will appear here."
+              tabindex="0"
+              role="region"
+              aria-label="Bản dịch"
+              aria-live="polite"
+            ></div>
+          </div>
+          <div class="panel-footer target-footer">
+            <div class="footer-actions-left">
+              <button type="button" id="targetListenBtn" class="icon-btn" title="Nghe bản dịch" aria-label="Nghe bản dịch">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+              </button>
+            </div>
+            <div class="footer-actions-right">
+              <button type="button" id="starBtn" class="icon-btn star-btn" title="Lưu bản dịch" aria-label="Lưu bản dịch">
+                <svg class="star-icon-outline" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+                  <path d="M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28M12 15.4z"/>
+                </svg>
+                <svg class="star-icon-filled hidden" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                </svg>
+              </button>
+              <button type="button" id="copyBtn" class="icon-btn copy-btn" title="Sao chép bản dịch" aria-label="Sao chép bản dịch">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+                  <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <section class="phrase-section" aria-labelledby="phraseTitle">
+      <div class="phrase-heading"><h2 id="phraseTitle">Start with a phrase</h2><p>Tap one to see it translated.</p></div>
+      <div class="phrase-list">
+        <button type="button" data-phrase="Hello">Hello <span aria-hidden="true">↗</span></button>
+        <button type="button" data-phrase="Thank you">Thank you <span aria-hidden="true">↗</span></button>
+        <button type="button" data-phrase="How are you?">How are you? <span aria-hidden="true">↗</span></button>
+        <button type="button" data-phrase="Where is the station?">Where is the station? <span aria-hidden="true">↗</span></button>
+      </div>
+      <p class="phrase-note">A little understanding, a world of possibilities. Translate words, discover more.</p>
+    </section>
+  </main>
+  <footer class="studio-footer"><span>Made for everyday connections.</span><span>English &amp; Vietnamese — and beyond.</span></footer>
+
+  <div id="languageModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="languageSearch" hidden>
+    <div id="modalBackdrop" class="modal-backdrop"></div>
+    <div class="modal-container">
+      <header class="modal-header">
+        <div class="modal-search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+          <input
+            type="text"
+            id="languageSearch"
+            class="modal-search-input"
+            placeholder="Tìm kiếm ngôn ngữ..."
+            autocomplete="off"
+            aria-label="Tìm kiếm ngôn ngữ"
+          >
+        </div>
+        <button type="button" id="modalCloseBtn" class="icon-btn close-btn" title="Đóng" aria-label="Đóng bảng chọn ngôn ngữ">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </header>
+      <div class="modal-body">
+        <div id="languageList" class="language-grid" role="listbox" aria-label="Danh sách ngôn ngữ">
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside id="historyDrawer" class="history-drawer" aria-labelledby="historyDrawerTitle" aria-hidden="true">
+    <div id="drawerBackdrop" class="drawer-backdrop"></div>
+    <div class="drawer-container">
+      <header class="drawer-header">
+        <h2 id="historyDrawerTitle" class="drawer-title">Lịch sử dịch</h2>
+        <button type="button" id="historyCloseBtn" class="icon-btn" title="Đóng" aria-label="Đóng lịch sử">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </header>
+      <div class="drawer-tabs" role="tablist" aria-label="Bộ lọc lịch sử">
+        <button type="button" id="historyTabAll" class="drawer-tab active" role="tab" aria-selected="true">Tất cả</button>
+        <button type="button" id="historyTabStarred" class="drawer-tab" role="tab" aria-selected="false">Đã gắn sao</button>
+      </div>
+      <div class="drawer-body">
+        <div id="historyList" class="history-list" role="feed" aria-label="Danh sách các bản dịch đã lưu">
+
+        </div>
+      </div>
+      <footer class="drawer-footer">
+        <button type="button" id="clearHistoryBtn" class="clear-history-btn" title="Xóa toàn bộ lịch sử">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z"/>
+          </svg>
+          <span>Xóa toàn bộ lịch sử</span>
+        </button>
+      </footer>
+    </div>
+  </aside>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="languages.js"></script>
+  <script src="translator.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
