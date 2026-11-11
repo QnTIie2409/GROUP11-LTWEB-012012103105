@@ -29,8 +29,9 @@ const { TranslationService } = typeof window !== 'undefined' && window.Translati
  */
 const STORAGE_KEYS = {
   THEME: 'google_translate_theme',
-  HISTORY: 'google_translate_history'
+  HISTORY: 'google_translate_history' // Legacy data; imported into MySQL once.
 };
+const HISTORY_API_URL = 'api/history.php';
 
 /**
  * BCP-47 language tag mapping for speech services
@@ -183,6 +184,7 @@ class GoogleTranslateApp {
     this.currentSpeakingBtn = null;
     this.currentAudio = null;
     this.ttsSessionCounter = 0;
+    this.historySaveQueue = Promise.resolve();
 
     // DOM references
     this.dom = options.dom || {};
@@ -191,10 +193,10 @@ class GoogleTranslateApp {
   /**
    * Initializes the application: queries DOM elements, loads storage, renders UI, and binds events.
    */
-  init() {
+  async init() {
     this._bindDomElements();
     this.loadTheme();
-    this.loadHistory();
+    await this.loadHistory();
     this.renderTabs();
     this.updateCharCount();
     this.updateStarBtnState();
@@ -449,26 +451,49 @@ class GoogleTranslateApp {
   }
 
 
-  loadHistory() {
-    if (!this.storage) return;
+  async loadHistory() {
+    if (typeof window === 'undefined') return;
     try {
-      const raw = this.storage.getItem(STORAGE_KEYS.HISTORY);
+      const response = await fetch(HISTORY_API_URL, { credentials: 'same-origin' });
+      if (!response.ok) throw new Error('Cannot load history');
+      const remote = await response.json();
+      if (!Array.isArray(remote)) throw new Error('Invalid history response');
+      this.state.history = remote;
+
+      // Move data saved by older versions to MySQL before deleting the old key.
+      const raw = this.storage && this.storage.getItem(STORAGE_KEYS.HISTORY);
       if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          this.state.history = parsed;
+        let old = [];
+        try { old = JSON.parse(raw); } catch (_) {}
+        if (Array.isArray(old)) {
+          const ids = new Set(remote.map(item => item.id));
+          this.state.history = [...remote, ...old.filter(item => item && !ids.has(item.id))]
+            .sort((a, b) => b.timestamp - a.timestamp).slice(0, 50);
+          await this.saveHistory();
+          this.storage.removeItem(STORAGE_KEYS.HISTORY);
         }
       }
-    } catch (_) {
-      this.state.history = [];
+    } catch (error) {
+      console.error('History load failed:', error);
+      this.showToast('Không tải được lịch sử từ MySQL. Kiểm tra kết nối database.');
     }
   }
 
   saveHistory() {
-    if (!this.storage) return;
-    try {
-      this.storage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(this.state.history));
-    } catch (_) {}
+    if (typeof window === 'undefined') return Promise.resolve();
+    const snapshot = JSON.stringify(this.state.history);
+    this.historySaveQueue = this.historySaveQueue.catch(() => {}).then(async () => {
+      const response = await fetch(HISTORY_API_URL, {
+        method: 'PUT', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' }, body: snapshot
+      });
+      if (!response.ok) throw new Error('Cannot save history');
+    });
+    this.historySaveQueue.catch(error => {
+      console.error('History save failed:', error);
+      this.showToast('Không lưu được lịch sử vào MySQL.');
+    });
+    return this.historySaveQueue;
   }
 
   /**

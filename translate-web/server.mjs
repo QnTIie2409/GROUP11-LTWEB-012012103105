@@ -3,9 +3,11 @@ import https from 'https';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { handleHistory } from './history-db.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const projectRoot = path.dirname(__dirname);
 
 // Lazy-load Lens from chrome-lens-ocr
 let lensInstance = null;
@@ -26,7 +28,9 @@ const MIME_TYPES = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon'
+  '.ico': 'image/x-icon',
+  '.otf': 'font/otf',
+  '.jfif': 'image/jpeg'
 };
 
 const PORT = parseInt(process.env.PORT, 10) || 8080;
@@ -35,10 +39,28 @@ const PORT = parseInt(process.env.PORT, 10) || 8080;
  * Handles static file serving
  */
 function serveStaticFile(req, res, pathname) {
-  let filePath = path.join(__dirname, pathname === '/' ? 'index.html' : pathname);
+  let decoded;
+  try { decoded = decodeURIComponent(pathname); } catch { decoded = ''; }
+  if (decoded.endsWith('/')) decoded += 'index.html';
+  const segments = decoded.split('/').filter(Boolean);
+  const first = segments[0];
+  const isGroupAsset = decoded === '/index.html' || decoded === '/image.png' || decoded === '/css/style.css';
+  const isTranslateAsset = first === 'translate-web' && (
+    decoded === '/translate-web/index.html' ||
+    /^\/translate-web\/(js|css)\/[a-zA-Z0-9._-]+\.(js|css)$/.test(decoded)
+  );
+  const memberDirs = new Set(['LeHuy', 'hieu\'', 'Ngô Khánh Nguyên', 'Thân_Đức_Tiến_075207010355']);
+  const isMemberAsset = memberDirs.has(first) && segments.length >= 2 &&
+    segments.every(segment => segment !== '.' && segment !== '..' && !segment.startsWith('.')) &&
+    /\.(html|css|js|png|jpe?g|jfif|svg|otf)$/i.test(decoded);
+  if (!isGroupAsset && !isTranslateAsset && !isMemberAsset) {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('404 Not Found');
+    return;
+  }
+  const filePath = path.resolve(projectRoot, '.' + decoded);
 
-  // Security check: prevent directory traversal
-  if (!filePath.startsWith(__dirname)) {
+  if (!filePath.startsWith(projectRoot + path.sep)) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     res.end('403 Forbidden');
     return;
@@ -136,7 +158,7 @@ function handleTtsProxy(req, res, parsedUrl) {
 const server = http.createServer((req, res) => {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
@@ -148,7 +170,9 @@ const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
 
-  if (req.method === 'POST' && pathname === '/api/ocr') {
+  if (pathname === '/api/history') {
+    handleHistory(req, res);
+  } else if (req.method === 'POST' && pathname === '/api/ocr') {
     handleBufferOcr(req, res);
   } else if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/api/tts') {
     handleTtsProxy(req, res, parsedUrl);
@@ -167,7 +191,7 @@ const server = http.createServer((req, res) => {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`Google Translate Web Server running at http://localhost:${PORT}`);
-    console.log(`- Static files served from ${__dirname}`);
+    console.log(`- Group page: /; Lingo Studio: /translate-web/`);
     console.log(`- POST /api/ocr (buffer upload/paste + chrome-lens-ocr)`);
     console.log(`- GET /api/tts?tl=...&q=... (Google Translate TTS proxy)`);
   });

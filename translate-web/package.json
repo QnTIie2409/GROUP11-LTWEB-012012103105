@@ -6,14 +6,15 @@
     "start": "node server.mjs"
   },
   "files": [
-    "app.js",
+    "js/app.js",
     "index.html",
-    "languages.js",
+    "js/languages.js",
     "server.mjs",
-    "style.css",
-    "translator.js"
+    "css/style.css",
+    "js/translator.js"
   ],
   "dependencies": {
-    "chrome-lens-ocr": "^4.1.1"
+    "chrome-lens-ocr": "^4.1.1",
+    "mysql2": "^3.15.3"
   }
 }
