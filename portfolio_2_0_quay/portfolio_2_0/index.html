@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2f6bff">
+  <meta name="description" content="Portfolio của Nguyễn Toàn Quốc — sinh viên Công nghệ thông tin tại UTH, định hướng Software Developer.">
+  <meta property="og:title" content="Nguyễn Toàn Quốc | Software Developer Portfolio">
+  <meta property="og:description" content="Sinh viên Công nghệ thông tin tại UTH, yêu thích lập trình và phát triển phần mềm.">
+  <title>Toàn Quốc ✌ code, bug & cà phê</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav container" aria-label="Điều hướng chính">
+      <a class="brand" href="#home" aria-label="Trang chủ"><span class="brand-face" id="brandFace">:)</span> toanquoc.dev</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Mở menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+      <div class="nav-links" id="navLinks">
+        <a href="#about">Tôi là ai?</a>
+        <a href="#skills">Đồ nghề</a>
+        <a href="#projects">Dự án</a>
+        <a href="#goals">Sắp tới</a>
+        <a href="#contact" class="nav-cta">Nhắn tôi đi!</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero container" id="home">
+      <div class="hero-copy">
+        <p class="sticker sticker-yellow tilt-l">👋 ê, ghé chơi hả?</p>
+        <h1><span class="h1-line">Nguyễn</span> <span class="h1-line pink-hl">Toàn</span> <span class="h1-line">Quốc</span></h1>
+        <p class="role-line">Đang tập tành thành <span id="typedRole" class="typed-role"></span><span class="caret">|</span></p>
+        <p class="hero-description">Sinh viên Công nghệ thông tin ở UTH. Mê dựng phần mềm, mê giải bài toán hóc búa, và đang học cách sửa bug mà không đổ lỗi cho con mèo. Bấm thử vào ảnh của tôi đi 😏</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#projects">Xem tôi đã làm gì</a>
+          <a class="button button-secondary" href="#contact">Làm quen nha</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <button class="portrait-btn" id="portraitBtn" aria-label="Bấm vào ảnh để thấy điều bất ngờ">
+          <img src="assets/avatar.jpg" alt="Ảnh chân dung Nguyễn Toàn Quốc" class="portrait">
+          <span class="speech" id="speech">Bấm tôi đi!</span>
+        </button>
+        <span class="sticker sticker-green tilt-r s-ielts">IELTS 6.5 ✨</span>
+        <span class="sticker sticker-pink tilt-l s-learn">always learning</span>
+        <span class="star star-1" aria-hidden="true">✦</span>
+        <span class="star star-2" aria-hidden="true">✺</span>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>C</span><span>C++</span><span>Python</span><span>Java</span><span>HTML</span><span>CSS</span><span>JavaScript</span><span>MySQL</span><span>Git</span><span>Postman</span>
+        <span>C</span><span>C++</span><span>Python</span><span>Java</span><span>HTML</span><span>CSS</span><span>JavaScript</span><span>MySQL</span><span>Git</span><span>Postman</span>
+      </div>
+    </div>
+
+    <section class="section container" id="about">
+      <div class="section-heading"><h2>Tôi là <span class="squiggle">ai</span> vậy?</h2><p class="scribble">tóm tắt trong 30 giây ↓</p></div>
+      <div class="about-layout">
+        <article class="card about-card tilt-l">
+          <h3>Học hôm nay, build ngày mai.</h3>
+          <p>Tôi là Nguyễn Toàn Quốc, sinh viên ngành Công nghệ thông tin tại Trường Đại học Giao thông vận tải TP. Hồ Chí Minh (UTH). Tôi đang từng bước xây nền tảng về lập trình, cấu trúc dữ liệu, phát triển web và làm việc nhóm.</p>
+          <p>Mục tiêu: trở thành Software Developer, góp tay vào những sản phẩm hữu ích và lớn lên qua dự án thật.</p>
+          <div class="chips"><span>Giải quyết vấn đề</span><span>Tự học</span><span>Làm việc nhóm</span></div>
+        </article>
+        <div class="about-side">
+          <div class="fact tilt-r"><b>🏫 UTH</b><span>University of Transport Ho Chi Minh City</span></div>
+          <div class="fact tilt-l"><b>💻 Công nghệ thông tin</b><span>Information Technology</span></div>
+          <div class="fact tilt-r"><b>🗣️ IELTS 6.5</b><span>Thông tin do cá nhân cung cấp</span></div>
+          <div class="fact tilt-l"><b>🎯 Software Developer</b><span>Không ngừng học hỏi và thực hành</span></div>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <div class="tl-item card tilt-r"><span class="tl-tag">Bây giờ</span><h3>Sinh viên CNTT · UTH</h3><p>Đang củng cố nền tảng lập trình, thuật toán, cơ sở dữ liệu và phát triển phần mềm.</p></div>
+        <div class="tl-item card tilt-l"><span class="tl-tag tl-next">Level tiếp theo</span><h3>Software Developer</h3><p>Nâng tư duy giải quyết vấn đề, kỹ năng dựng ứng dụng, dùng Git thuần thục và làm ra sản phẩm có người dùng thật.</p></div>
+      </div>
+    </section>
+
+    <section class="section container" id="skills">
+      <div class="section-heading"><h2>Đồ nghề <span class="squiggle">trong túi</span></h2><p class="scribble">rê chuột vào từng cái thử xem 👀</p></div>
+      <div class="skills-grid">
+        <article class="card skill-card tilt-l"><div class="skill-emoji">⌨️</div><h3>Programming</h3><div class="pills"><span>C</span><span>C++</span><span>Python</span><span>Java</span></div></article>
+        <article class="card skill-card tilt-r"><div class="skill-emoji">🌐</div><h3>Web</h3><div class="pills"><span>HTML5</span><span>CSS3</span><span>JavaScript</span></div></article>
+        <article class="card skill-card tilt-l"><div class="skill-emoji">🗄️</div><h3>Database</h3><div class="pills"><span>MySQL</span><span>SQL Server</span><span>MongoDB</span></div></article>
+        <article class="card skill-card tilt-r"><div class="skill-emoji">🧰</div><h3>Công cụ</h3><div class="pills"><span>Git</span><span>GitHub</span><span>VS Code</span><span>Postman</span></div></article>
+      </div>
+      <p class="skills-note">✳ Đây là những thứ tôi đã học hoặc từng đụng tới, chưa phải chứng nhận "thần thánh". Cái nào cũng đang được luyện tiếp.</p>
+    </section>
+
+    <section class="section container" id="projects">
+      <div class="section-heading"><h2>Dự án <span class="squiggle">tôi đã quậy</span></h2><p class="scribble">nói thật: cái nào làm rồi, cái nào mới là ý tưởng</p></div>
+      <div class="project-list">
+
+        <article class="card project-card tilt-l">
+          <div class="project-top"><span class="num">#1</span><span class="status status-done">✅ Đã làm trong học tập</span></div>
+          <div class="project-body">
+            <div class="project-info">
+              <h3>Bellman–Ford Pathfinding Visualizer</h3>
+              <p>Chuyển đổi và phát triển bài toán tìm đường ngắn nhất trên lưới bằng thuật toán Bellman–Ford: có ô trống, vật cản, đi 8 hướng và trực quan hóa đường đi.</p>
+              <div class="pills"><span>C / C++</span><span>Graph Algorithm</span><span>OpenCV (bản trực quan hóa)</span></div>
+              <p class="role-note"><b>Vai trò:</b> Thực hành chuyển đổi thuật toán, xử lý lưới và tìm hiểu cách trực quan hóa kết quả.</p>
+            </div>
+            <div class="project-visual">
+              <div class="mini-grid" id="miniGrid"></div>
+              <button class="mini-btn" id="runPath" type="button">▶ chạy thử</button>
+            </div>
+          </div>
+          <div class="project-foot"><span>Loại: học thuật</span><span>Mã nguồn: cập nhật liên kết GitHub của bạn</span></div>
+        </article>
+
+        <article class="card project-card tilt-r">
+          <div class="project-top"><span class="num">#2</span><span class="status status-team">👥 Dự án nhóm đã tham gia</span></div>
+          <div class="project-body">
+            <div class="project-info">
+              <h3>P2P Chat GUI</h3>
+              <p>Ứng dụng trò chuyện ngang hàng (Peer-to-Peer) có giao diện đồ họa. Làm theo nhóm, tôi không nhận là tác giả toàn bộ hệ thống.</p>
+              <div class="pills"><span>GitHub</span><span>GUI</span><span>Peer-to-Peer</span></div>
+              <p class="role-note"><b>Vai trò:</b> Tester trong nhóm — kiểm thử, ghi nhận lỗi và đối chiếu kết quả thực tế với kết quả mong đợi. (Tức là người đi tìm bug 🐛)</p>
+            </div>
+            <div class="project-visual chat-visual">
+              <div class="bubble b-left">Hello! 👋</div>
+              <div class="bubble b-right">Hi, nice to meet you.</div>
+              <div class="bubble b-left b-typing"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+          <div class="project-foot"><span>Loại: dự án nhóm</span><a href="https://github.com/KDang2708/P2P-Chat-GUI" target="_blank" rel="noopener noreferrer">GitHub repository ↗</a></div>
+        </article>
+
+        <article class="card project-card tilt-l">
+          <div class="project-top"><span class="num">#3</span><span class="status status-idea">💡 Ý tưởng · chưa triển khai</span></div>
+          <div class="project-body">
+            <div class="project-info">
+              <h3>Student Management System</h3>
+              <p>Ý tưởng website quản lý sinh viên: thêm/sửa/xóa hồ sơ, tìm kiếm, quản lý lớp và xem bảng điểm. Đây là demo đề xuất, <b>chưa phải sản phẩm hoàn thành</b>.</p>
+              <div class="pills"><span>HTML / CSS / JS</span><span>Node.js (dự kiến)</span><span>MySQL (dự kiến)</span></div>
+              <p class="role-note"><b>Mục tiêu:</b> Luyện CRUD, thiết kế giao diện, kết nối cơ sở dữ liệu và xây dựng API.</p>
+            </div>
+            <div class="project-visual dash-visual">
+              <div class="dash-bars"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <span class="stamp">COMING SOON?</span>
+            </div>
+          </div>
+          <div class="project-foot"><span>Loại: demo đề xuất</span><span>Chưa có mã nguồn / bản triển khai</span></div>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="section container" id="goals">
+      <div class="section-heading"><h2>Quest <span class="squiggle">sắp tới</span></h2><p class="scribble">checklist cho hành trình lên level</p></div>
+      <div class="goal-grid">
+        <label class="goal card tilt-l"><input type="checkbox"><span class="box"></span><div><h3>Củng cố nền tảng</h3><p>Thuật toán, cấu trúc dữ liệu, OOP và cơ sở dữ liệu.</p></div></label>
+        <label class="goal card tilt-r"><input type="checkbox"><span class="box"></span><div><h3>Build sản phẩm thật</h3><p>Hoàn thiện project cá nhân, viết README rõ ràng, công khai mã nguồn phù hợp.</p></div></label>
+        <label class="goal card tilt-l"><input type="checkbox"><span class="box"></span><div><h3>Làm nhóm cho ngầu</h3><p>Git, code review, kiểm thử và giao tiếp trong quy trình phát triển phần mềm.</p></div></label>
+      </div>
+      <p class="scribble center" id="goalMsg">tick thử đi, không sao đâu</p>
+    </section>
+
+    <section class="contact-section container" id="contact">
+      <div class="contact-panel">
+        <p class="sticker sticker-yellow tilt-r">📬 hộp thư luôn mở</p>
+        <h2>Cùng làm gì đó <span class="pink-hl">có ích</span> nha!</h2>
+        <p class="contact-copy">Tôi luôn sẵn sàng học hỏi, trao đổi kiến thức và tham gia các dự án phù hợp trong lĩnh vực phát triển phần mềm.</p>
+        <div class="contact-actions">
+          <a class="button button-primary" href="mailto:YOUR_EMAIL@example.com">Gửi email ↗</a>
+          <a class="button button-secondary" href="https://github.com/YOUR_GITHUB" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+          <a class="button button-secondary" href="https://www.linkedin.com/in/YOUR_LINKEDIN/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+        </div>
+        <p class="contact-hint">Lưu ý: thay email, GitHub và LinkedIn mẫu bằng liên kết thật trước khi đăng website.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    <a class="brand" href="#home"><span class="brand-face">:)</span> toanquoc.dev</a>
+    <p>Làm bằng tay, cà phê và vài con bug · <span id="year"></span></p>
+    <a href="#home" class="back-top">Lên đầu trang ↑</a>
+  </footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
