@@ -32,6 +32,13 @@ const STORAGE_KEYS = {
   HISTORY: 'google_translate_history' // Legacy data; imported into MySQL once.
 };
 const HISTORY_API_URL = 'api/history.php';
+const DEFAULT_STARTER_PHRASES = [
+  'Hello',
+  'Thank you',
+  'How are you?',
+  'Where is the station?'
+];
+const DEFAULT_PHRASE_SUBTITLE = 'Tap one to see it translated.';
 
 /**
  * BCP-47 language tag mapping for speech services
@@ -161,6 +168,10 @@ class GoogleTranslateApp {
   constructor(options = {}) {
     this.storage = options.storage || (typeof localStorage !== 'undefined' ? localStorage : null);
     this.translationService = options.translationService || (TranslationService ? new TranslationService() : null);
+    this.selectionTranslationService = options.selectionTranslationService ||
+      (options.translationService ? options.translationService : (TranslationService ? new TranslationService() : null));
+    this.contextTranslationService = options.contextTranslationService ||
+      (options.translationService ? options.translationService : (TranslationService ? new TranslationService() : null));
     this.debounceDelay = options.debounceDelay !== undefined ? options.debounceDelay : 400;
 
     // Core application state
@@ -180,11 +191,27 @@ class GoogleTranslateApp {
     this.targetTabs = ['vi', 'en', 'zh-CN', 'ja'];
 
     this.debounceTimer = null;
+    this.dictionaryDebounceTimer = null;
+    this.spotlightDebounceTimer = null;
+    this.spotlightSeq = 0;
+    this.spotlightData = null;
+    this.contextPassageSeq = 0;
+    this.defaultStarterPhrases = [...DEFAULT_STARTER_PHRASES];
+    this._lastDictionaryQuery = '';
+    this._activeContextLang = 'en';
+    this._voiceBaseText = '';
     this.currentUtterance = null;
     this.currentSpeakingBtn = null;
     this.currentAudio = null;
+    this.currentAudioUrl = null;
     this.ttsSessionCounter = 0;
+    this._ttsProxyAvailable = null;
     this.historySaveQueue = Promise.resolve();
+    this._authInitPromise = null;
+    this._isInitializingAuth = false;
+    this._historyLoadPromise = null;
+    this._lastHistoryRefreshAt = 0;
+    this._flashcardsRefreshBound = false;
 
     // DOM references
     this.dom = options.dom || {};
@@ -194,14 +221,46 @@ class GoogleTranslateApp {
    * Initializes the application: queries DOM elements, loads storage, renders UI, and binds events.
    */
   async init() {
-    this._bindDomElements();
-    this.loadTheme();
-    await this.loadHistory();
-    this.renderTabs();
-    this.updateCharCount();
-    this.updateStarBtnState();
-    this._bindEvents();
-    this._checkUrlParams();
+    try { this._bindDomElements(); } catch (err) { console.warn('DOM bind error:', err); }
+    try { this.loadTheme(); } catch (err) { console.warn('Theme load error:', err); }
+    try { this.renderTabs(); } catch (err) { console.warn('Render tabs error:', err); }
+    try { this.updateCharCount(); } catch (err) { console.warn('Char count error:', err); }
+    try { this.updateStarBtnState(); } catch (err) { console.warn('Star state error:', err); }
+    try { this._bindEvents(); } catch (err) { console.warn('Event bind error:', err); }
+    try { this._initFeatureModules(); } catch (err) { console.warn('Feature init error:', err); }
+
+    if (this._authInitPromise && typeof this._authInitPromise.then === 'function') {
+      this._isInitializingAuth = true;
+      let authTimeoutId = null;
+      try {
+        await Promise.race([
+          this._authInitPromise,
+          new Promise(resolve => {
+            authTimeoutId = setTimeout(resolve, 4000);
+          })
+        ]);
+      } catch (err) {
+        console.warn('LingoAuth readiness wait error:', err);
+      } finally {
+        if (authTimeoutId) {
+          clearTimeout(authTimeoutId);
+        }
+        this._isInitializingAuth = false;
+      }
+    }
+
+    try {
+      await this.loadHistory();
+      this.updateStarBtnState();
+      if (this.isHistoryDrawerOpen()) {
+        this.renderHistoryList();
+      }
+      this._refreshFlashcards();
+    } catch (err) {
+      console.warn('History init error:', err);
+    }
+
+    try { this._checkUrlParams(); } catch (err) { console.warn('URL params error:', err); }
 
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       if (typeof window.speechSynthesis.onvoiceschanged !== 'undefined') {
@@ -252,7 +311,19 @@ class GoogleTranslateApp {
       'historyTabStarred',
       'historyList',
       'clearHistoryBtn',
-      'toastContainer'
+      'toastContainer',
+      'authContainer',
+      'uiLangSelect',
+      'flashcardsToggleBtn',
+      'flashcardsModal',
+      'recordVoiceBtn',
+      'voiceRecorderBar',
+      'dictionaryContainer',
+      'selectionSpotlight',
+      'phraseSubtitle',
+      'resetPhrasesBtn',
+      'phraseList',
+      'contextPassageCard'
     ];
 
     ids.forEach(id => {
@@ -260,6 +331,15 @@ class GoogleTranslateApp {
         this.dom[id] = document.getElementById(id);
       }
     });
+
+    if (this.dom.phraseList && typeof this.dom.phraseList.querySelectorAll === 'function') {
+      const initialPhrases = Array.from(this.dom.phraseList.querySelectorAll('[data-phrase]'))
+        .map(el => (el.dataset && el.dataset.phrase ? el.dataset.phrase.trim() : ''))
+        .filter(Boolean);
+      if (initialPhrases.length > 0) {
+        this.defaultStarterPhrases = initialPhrases;
+      }
+    }
 
     // Detect pre-rendered active tab from DOM if available
     if (this.dom.targetTabs && typeof this.dom.targetTabs.querySelector === 'function') {
@@ -290,21 +370,44 @@ class GoogleTranslateApp {
     if (d.translateBtn) {
       d.translateBtn.addEventListener('click', () => this.performTranslation());
     }
-    if (typeof document !== 'undefined') {
+    if (d.phraseList) {
+      d.phraseList.addEventListener('click', (e) => {
+        const button = e.target && typeof e.target.closest === 'function'
+          ? e.target.closest('[data-phrase]')
+          : null;
+        if (!button || !d.sourceText) return;
+        const phrase = button.dataset ? button.dataset.phrase : button.getAttribute('data-phrase');
+        if (!phrase) return;
+        const isDynamic = button.classList && button.classList.contains('dynamic-phrase-btn');
+        const phraseLang = (button.dataset && button.dataset.phraseLang) ||
+          (isDynamic ? (this._activeContextLang || this._inferLanguageFromText(phrase)) : 'en');
+        this._applyPhraseToSource(phrase, phraseLang);
+      });
+    } else if (typeof document !== 'undefined') {
       document.querySelectorAll('[data-phrase]').forEach(button => {
         button.addEventListener('click', () => {
-          this.state.sourceLang = 'en';
-          this.state.targetLang = 'vi';
-          this.renderTabs();
-          d.sourceText.value = button.dataset.phrase;
-          this.handleSourceInput();
-          this.performTranslation();
+          const phrase = button.dataset ? button.dataset.phrase : button.getAttribute('data-phrase');
+          const isDynamic = button.classList && button.classList.contains('dynamic-phrase-btn');
+          const phraseLang = (button.dataset && button.dataset.phraseLang) ||
+            (isDynamic ? (this._activeContextLang || this._inferLanguageFromText(phrase)) : 'en');
+          this._applyPhraseToSource(phrase, phraseLang);
         });
       });
     }
 
+    if (d.resetPhrasesBtn) {
+      d.resetPhrasesBtn.addEventListener('click', () => this.resetPhrasesToDefault());
+    }
+
     if (d.sourceText) {
       d.sourceText.addEventListener('input', () => this.handleSourceInput());
+      d.sourceText.addEventListener('mouseup', () => this.scheduleSelectionSpotlight('source'));
+      d.sourceText.addEventListener('select', () => this.scheduleSelectionSpotlight('source'));
+      d.sourceText.addEventListener('keyup', (e) => {
+        if (e.shiftKey || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown' || d.sourceText.selectionEnd > d.sourceText.selectionStart) {
+          this.scheduleSelectionSpotlight('source');
+        }
+      });
       d.sourceText.addEventListener('keydown', (e) => {
         // Ctrl+Enter or Cmd+Enter translates immediately
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -312,6 +415,11 @@ class GoogleTranslateApp {
           this.performTranslation();
         }
       });
+    }
+
+    if (d.targetText) {
+      d.targetText.addEventListener('mouseup', () => this.scheduleSelectionSpotlight('target'));
+      d.targetText.addEventListener('keyup', () => this.scheduleSelectionSpotlight('target'));
     }
 
     if (d.clearBtn) {
@@ -414,6 +522,202 @@ class GoogleTranslateApp {
         }
       });
     }
+
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible' || this._isInitializingAuth) return;
+        const now = Date.now();
+        if (now - this._lastHistoryRefreshAt < 15000) return;
+        this.refreshHistory({ silent: true });
+      });
+    }
+  }
+
+  /**
+   * Initializes optional feature modules (auth, dictionary, recorder, flashcards)
+   * @private
+   */
+  _initFeatureModules() {
+    if (typeof window === 'undefined') return;
+    this._authInitPromise = null;
+
+    if (window.LingoI18n && typeof window.LingoI18n.init === 'function') {
+      try {
+        const i18nInit = window.LingoI18n.init({
+          selectEl: this.dom.uiLangSelect || null,
+          onLocaleReady: ({ targetLang, manual } = {}) => {
+            try {
+              const hasSourceText = Boolean(this.dom.sourceText && this.dom.sourceText.value.trim());
+              if (!manual && !hasSourceText && targetLang) {
+                this.state.targetLang = targetLang;
+                if (targetLang === 'en') {
+                  this.state.sourceLang = 'auto';
+                } else if (this.state.sourceLang === targetLang) {
+                  this.state.sourceLang = 'en';
+                }
+                this.renderTabs();
+              } else {
+                this._syncTextAreaLangAttributes();
+              }
+            } catch (err) {
+              console.warn('LingoI18n onLocaleReady error:', err);
+            }
+          }
+        });
+        if (i18nInit && typeof i18nInit.catch === 'function') {
+          i18nInit.catch(err => console.warn('LingoI18n async init error:', err));
+        }
+        if (typeof window.LingoI18n.onChange === 'function') {
+          window.LingoI18n.onChange(() => this._syncTextAreaLangAttributes());
+        }
+      } catch (err) {
+        console.warn('LingoI18n init error:', err);
+      }
+    }
+
+    if (window.LingoAuth && typeof window.LingoAuth.init === 'function' && this.dom.authContainer) {
+      try {
+        const authInit = window.LingoAuth.init({
+          containerEl: this.dom.authContainer,
+          onAuthChange: async () => {
+            try {
+              await this.refreshHistory({ force: true });
+            } catch (err) {
+              console.warn('LingoAuth onAuthChange error:', err);
+            }
+          }
+        });
+        if (authInit && typeof authInit.then === 'function') {
+          this._authInitPromise = authInit.catch(err => {
+            console.warn('LingoAuth async init error:', err);
+            return null;
+          });
+        }
+      } catch (err) {
+        console.warn('LingoAuth init error:', err);
+      }
+    }
+
+    if (window.LingoDictionary && typeof window.LingoDictionary.init === 'function' && this.dom.dictionaryContainer) {
+      try {
+        const dictInit = window.LingoDictionary.init({
+          containerEl: this.dom.dictionaryContainer,
+          onPhraseSelect: (phrase, langCode) => {
+            if (!phrase || !this.dom.sourceText) return;
+            const srcLang = (langCode && langCode !== 'auto')
+              ? langCode
+              : (this._activeContextLang || this._inferLanguageFromText(phrase));
+            this._applyPhraseToSource(phrase, srcLang);
+          },
+          onSpeak: (text, langCode) => this.speakText(text, langCode || this._activeContextLang || 'en'),
+          onEntryLoaded: (data, word, lang) => this.handleDictionaryEntryLoaded(data, word, lang),
+          onClear: () => this.handleDictionaryCleared()
+        });
+        if (dictInit && typeof dictInit.catch === 'function') {
+          dictInit.catch(err => console.warn('LingoDictionary async init error:', err));
+        }
+      } catch (err) {
+        console.warn('LingoDictionary init error:', err);
+      }
+    }
+
+    if (window.LingoRecorder && typeof window.LingoRecorder.init === 'function' && this.dom.recordVoiceBtn && this.dom.voiceRecorderBar) {
+      try {
+        let statusEl = this.dom.voiceRecorderBar.querySelector('.recorder-status');
+        let playbackEl = this.dom.voiceRecorderBar.querySelector('.recorder-playback-container');
+        if (!statusEl) {
+          statusEl = document.createElement('span');
+          statusEl.id = 'voiceRecorderStatus';
+          statusEl.className = 'recorder-status';
+          this.dom.voiceRecorderBar.appendChild(statusEl);
+        }
+        if (!playbackEl) {
+          playbackEl = document.createElement('div');
+          playbackEl.id = 'voiceRecorderPlayback';
+          playbackEl.className = 'recorder-playback-container';
+          this.dom.voiceRecorderBar.appendChild(playbackEl);
+        }
+
+        const recInit = window.LingoRecorder.init({
+          recordBtn: this.dom.recordVoiceBtn,
+          statusEl,
+          playbackContainerEl: playbackEl,
+          onToast: (msg) => this.showToast(msg),
+          getSourceLang: () => this.state.sourceLang || 'auto',
+          getSpeechLang: () => {
+            const existingText = this.dom.sourceText ? this.dom.sourceText.value.trim() : '';
+            const hasExplicitOrDetected =
+              (this.state.sourceLang && this.state.sourceLang !== 'auto') ||
+              (this.state.detectedLang && this.state.detectedLang !== 'auto') ||
+              Boolean(existingText);
+            const lang = hasExplicitOrDetected
+              ? this._resolveSourceTtsLang(existingText)
+              : ((typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) || 'vi');
+            return getBcp47Tag(lang || 'vi');
+          },
+          onRecordStart: () => {
+            this._voiceBaseText = this.dom.sourceText ? this.dom.sourceText.value.trim() : '';
+          },
+          onTranscript: ({ text, isFinal } = {}) => {
+            if (!this.dom.sourceText) return;
+            const spoken = typeof text === 'string' ? text.trim() : '';
+            const base = this._voiceBaseText || '';
+            const nextValue = spoken ? (base ? base + ' ' + spoken : spoken) : base;
+            this.dom.sourceText.value = nextValue.slice(0, 5000);
+            if (!isFinal) {
+              this.handleSourceInput();
+            } else {
+              this.updateCharCount();
+              this.updateClearBtn();
+            }
+          },
+          onRecordStop: ({ text } = {}) => {
+            if (!this.dom.sourceText) return;
+            const spoken = typeof text === 'string' ? text.trim() : '';
+            if (spoken) {
+              const base = this._voiceBaseText || '';
+              const nextValue = base ? base + ' ' + spoken : spoken;
+              this.dom.sourceText.value = nextValue.slice(0, 5000);
+              clearTimeout(this.debounceTimer);
+              this.updateCharCount();
+              this.updateClearBtn();
+              this._syncDynamicSourceFont(this.dom.sourceText.value);
+              this.performTranslation();
+              this._scheduleDictionaryLookup(this.dom.sourceText.value);
+            }
+          }
+        });
+        if (recInit && typeof recInit.catch === 'function') {
+          recInit.catch(err => console.warn('LingoRecorder async init error:', err));
+        }
+      } catch (err) {
+        console.warn('LingoRecorder init error:', err);
+      }
+    }
+
+    if (window.LingoFlashcards && typeof window.LingoFlashcards.init === 'function' && this.dom.flashcardsToggleBtn && this.dom.flashcardsModal) {
+      try {
+        const fcInit = window.LingoFlashcards.init({
+          openBtn: this.dom.flashcardsToggleBtn,
+          modalEl: this.dom.flashcardsModal,
+          getStarredItems: () => this.state.history.filter(item => Boolean(item && item.starred)),
+          onUnstar: (id) => this.unstarHistoryItem(id),
+          onSpeak: (text, langCode) => this.speakText(text, langCode),
+          onToast: (msg) => this.showToast(msg)
+        });
+        if (!this._flashcardsRefreshBound && typeof this.dom.flashcardsToggleBtn.addEventListener === 'function') {
+          this._flashcardsRefreshBound = true;
+          this.dom.flashcardsToggleBtn.addEventListener('click', () => {
+            this.refreshHistory();
+          });
+        }
+        if (fcInit && typeof fcInit.catch === 'function') {
+          fcInit.catch(err => console.warn('LingoFlashcards async init error:', err));
+        }
+      } catch (err) {
+        console.warn('LingoFlashcards init error:', err);
+      }
+    }
   }
 
 
@@ -451,49 +755,202 @@ class GoogleTranslateApp {
   }
 
 
-  async loadHistory() {
-    if (typeof window === 'undefined') return;
+  _getResponseContentType(response) {
     try {
-      const response = await fetch(HISTORY_API_URL, { credentials: 'same-origin' });
-      if (!response.ok) throw new Error('Cannot load history');
-      const remote = await response.json();
-      if (!Array.isArray(remote)) throw new Error('Invalid history response');
+      if (response && response.headers && typeof response.headers.get === 'function') {
+        return String(response.headers.get('content-type') || '').toLowerCase();
+      }
+    } catch (_) {}
+    return '';
+  }
+
+  _sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async _fetchHistoryWithRetry(url, fetchOptions = {}) {
+    const retryDelays = Array.isArray(this.historyRetryDelays) ? this.historyRetryDelays : [500, 1200];
+    const mergedOptions = {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      ...fetchOptions
+    };
+
+    for (let attempt = 0; attempt <= retryDelays.length; attempt += 1) {
+      try {
+        const response = await fetch(url, mergedOptions);
+        if (response && response.status === 503 && attempt < retryDelays.length) {
+          await this._sleep(retryDelays[attempt]);
+          continue;
+        }
+        return response;
+      } catch (error) {
+        if (attempt < retryDelays.length) {
+          await this._sleep(retryDelays[attempt]);
+          continue;
+        }
+        throw error;
+      }
+    }
+  }
+
+  async loadHistory(options = {}) {
+    if (typeof window === 'undefined' || typeof fetch !== 'function') return;
+    const silent = Boolean(options && options.silent);
+    this._lastHistoryRefreshAt = Date.now();
+
+    try {
+      await this.historySaveQueue.catch(() => false);
+      const response = await this._fetchHistoryWithRetry(HISTORY_API_URL, {
+        method: 'GET'
+      });
+      const contentType = this._getResponseContentType(response);
+      if (!response.ok || !contentType.includes('application/json')) {
+        console.warn(`History service unavailable (${response.status}); using in-memory session.`);
+        if (!silent) {
+          this.showToast('Không tải được lịch sử từ MySQL. Các tính năng dịch vẫn hoạt động bình thường.');
+        }
+        return;
+      }
+
+      const remote = await response.json().catch(() => null);
+      if (!Array.isArray(remote)) {
+        console.warn('Invalid history payload; keeping current session history.');
+        return;
+      }
       this.state.history = remote;
+      this._lastHistoryRefreshAt = Date.now();
 
       // Move data saved by older versions to MySQL before deleting the old key.
-      const raw = this.storage && this.storage.getItem(STORAGE_KEYS.HISTORY);
+      let raw = null;
+      try {
+        raw = this.storage && this.storage.getItem(STORAGE_KEYS.HISTORY);
+      } catch (_) {}
       if (raw) {
         let old = [];
         try { old = JSON.parse(raw); } catch (_) {}
         if (Array.isArray(old)) {
           const ids = new Set(remote.map(item => item.id));
-          this.state.history = [...remote, ...old.filter(item => item && !ids.has(item.id))]
+          const toMerge = old
+            .filter(item =>
+              item &&
+              typeof item.id === 'string' &&
+              item.id.trim() &&
+              typeof item.sourceText === 'string' &&
+              typeof item.targetText === 'string' &&
+              !ids.has(item.id)
+            )
+            .map(item => ({
+              id: item.id.trim().slice(0, 64),
+              sourceLang: typeof item.sourceLang === 'string' && item.sourceLang ? item.sourceLang.slice(0, 12) : 'auto',
+              targetLang: typeof item.targetLang === 'string' && item.targetLang ? item.targetLang.slice(0, 12) : 'vi',
+              sourceText: item.sourceText.slice(0, 5000),
+              targetText: item.targetText.slice(0, 20000),
+              starred: Boolean(item.starred),
+              timestamp: Number.isFinite(Number(item.timestamp)) && Number(item.timestamp) >= 0
+                ? Math.trunc(Number(item.timestamp))
+                : Date.now()
+            }))
+            .slice(0, 50);
+
+          this.state.history = [...remote, ...toMerge]
             .sort((a, b) => b.timestamp - a.timestamp).slice(0, 50);
-          await this.saveHistory();
-          this.storage.removeItem(STORAGE_KEYS.HISTORY);
+
+          const saved = toMerge.length > 0
+            ? await this._postHistoryAction({ action: 'merge', items: toMerge })
+            : true;
+          if (saved && this.storage) {
+            try { this.storage.removeItem(STORAGE_KEYS.HISTORY); } catch (_) {}
+          }
         }
       }
     } catch (error) {
-      console.error('History load failed:', error);
-      this.showToast('Không tải được lịch sử từ MySQL. Kiểm tra kết nối database.');
+      console.warn('History load failed:', error);
+      if (!silent) {
+        this.showToast('Không tải được lịch sử từ MySQL. Kiểm tra kết nối database.');
+      }
     }
   }
 
-  saveHistory() {
-    if (typeof window === 'undefined') return Promise.resolve();
+  refreshHistory(options = {}) {
+    const force = Boolean(options && options.force);
+    const silent = Boolean(options && options.silent);
+    if (!force && this._historyLoadPromise) {
+      return this._historyLoadPromise;
+    }
+
+    let wrappedPromise = null;
+    const run = (async () => {
+      if (force && this._historyLoadPromise && this._historyLoadPromise !== wrappedPromise) {
+        try { await this._historyLoadPromise; } catch (_) {}
+      }
+      await this.loadHistory({ silent });
+      this.renderHistoryList();
+      this.updateStarBtnState();
+      this._refreshFlashcards();
+    })();
+
+    wrappedPromise = run.finally(() => {
+      if (this._historyLoadPromise === wrappedPromise) {
+        this._historyLoadPromise = null;
+      }
+    });
+    this._historyLoadPromise = wrappedPromise;
+
+    return this._historyLoadPromise;
+  }
+
+  async _putHistorySnapshot() {
     const snapshot = JSON.stringify(this.state.history);
-    this.historySaveQueue = this.historySaveQueue.catch(() => {}).then(async () => {
-      const response = await fetch(HISTORY_API_URL, {
-        method: 'PUT', credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' }, body: snapshot
+    const response = await this._fetchHistoryWithRetry(HISTORY_API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: snapshot
+    });
+    const contentType = this._getResponseContentType(response);
+    if (!response.ok || !contentType.includes('application/json')) {
+      throw new Error(`Cannot save history (${response ? response.status : 'unknown'})`);
+    }
+    await response.json().catch(() => null);
+    return true;
+  }
+
+  _postHistoryAction(payload) {
+    if (typeof window === 'undefined' || typeof fetch !== 'function') return Promise.resolve(false);
+    const body = JSON.stringify(payload);
+    const nextSave = this.historySaveQueue.catch(() => false).then(async () => {
+      const response = await this._fetchHistoryWithRetry(HISTORY_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body
       });
-      if (!response.ok) throw new Error('Cannot save history');
-    });
-    this.historySaveQueue.catch(error => {
-      console.error('History save failed:', error);
+      if (response && response.status === 405) {
+        return this._putHistorySnapshot();
+      }
+      const contentType = this._getResponseContentType(response);
+      if (!response.ok || !contentType.includes('application/json')) {
+        throw new Error(`Cannot save history (${response ? response.status : 'unknown'})`);
+      }
+      await response.json().catch(() => null);
+      return true;
+    }).catch(error => {
+      console.warn('History save failed:', error);
       this.showToast('Không lưu được lịch sử vào MySQL.');
+      return false;
     });
-    return this.historySaveQueue;
+    this.historySaveQueue = nextSave;
+    return nextSave;
+  }
+
+  saveHistory() {
+    if (typeof window === 'undefined' || typeof fetch !== 'function') return Promise.resolve(false);
+    const nextSave = this.historySaveQueue.catch(() => false).then(() => this._putHistorySnapshot()).catch(error => {
+      console.warn('History save failed:', error);
+      this.showToast('Không lưu được lịch sử vào MySQL.');
+      return false;
+    });
+    this.historySaveQueue = nextSave;
+    return nextSave;
   }
 
   /**
@@ -513,10 +970,10 @@ class GoogleTranslateApp {
            h.targetLang === item.targetLang
     );
 
-    let starred = false;
+    let starred = Boolean(item.starred);
     if (existingIndex !== -1) {
       // Preserve starred status if it was previously starred
-      starred = Boolean(this.state.history[existingIndex].starred);
+      starred = starred || Boolean(this.state.history[existingIndex].starred);
       this.state.history.splice(existingIndex, 1);
     }
 
@@ -537,11 +994,21 @@ class GoogleTranslateApp {
       this.state.history = this.state.history.slice(0, 50);
     }
 
-    this.saveHistory();
+    this._postHistoryAction({ action: 'upsert', item: newRecord });
     if (this.isHistoryDrawerOpen()) {
       this.renderHistoryList();
     }
     this.updateStarBtnState();
+    this._refreshFlashcards();
+    return newRecord;
+  }
+
+  _refreshFlashcards() {
+    if (typeof window !== 'undefined' && window.LingoFlashcards && typeof window.LingoFlashcards.refresh === 'function') {
+      try {
+        window.LingoFlashcards.refresh();
+      } catch (_) {}
+    }
   }
 
   isHistoryDrawerOpen() {
@@ -567,6 +1034,7 @@ class GoogleTranslateApp {
       d.historyToggleBtn.classList.add('active');
     }
     this.renderHistoryList();
+    this.refreshHistory();
   }
 
   closeHistoryDrawer() {
@@ -684,17 +1152,30 @@ class GoogleTranslateApp {
     const item = this.state.history.find(h => h.id === id);
     if (!item) return;
     item.starred = !item.starred;
-    this.saveHistory();
+    this._postHistoryAction({ action: 'star', id: item.id, starred: item.starred });
     this.renderHistoryList();
     this.updateStarBtnState();
+    this._refreshFlashcards();
     this.showToast(item.starred ? 'Đã lưu bản dịch' : 'Đã xóa khỏi danh sách đã lưu');
+  }
+
+  unstarHistoryItem(id) {
+    const item = this.state.history.find(h => h.id === id);
+    if (!item || !item.starred) return;
+    item.starred = false;
+    const pending = this._postHistoryAction({ action: 'star', id: item.id, starred: false });
+    this.renderHistoryList();
+    this.updateStarBtnState();
+    this.showToast('Đã xóa khỏi danh sách đã lưu');
+    return pending;
   }
 
   deleteHistoryItem(id) {
     this.state.history = this.state.history.filter(h => h.id !== id);
-    this.saveHistory();
+    this._postHistoryAction({ action: 'delete', id });
     this.renderHistoryList();
     this.updateStarBtnState();
+    this._refreshFlashcards();
   }
 
   clearHistory() {
@@ -704,9 +1185,10 @@ class GoogleTranslateApp {
     }
 
     this.state.history = [];
-    this.saveHistory();
+    this._postHistoryAction({ action: 'clear' });
     this.renderHistoryList();
     this.updateStarBtnState();
+    this._refreshFlashcards();
     this.showToast('Đã xóa toàn bộ lịch sử');
   }
 
@@ -723,6 +1205,7 @@ class GoogleTranslateApp {
     this.setSourceLang(item.sourceLang, false);
     this.setTargetLang(item.targetLang, false);
     this.state.detectedLang = '';
+    this._syncTextAreaLangAttributes();
 
     if (this.dom.detectedLangBadge) {
       this.dom.detectedLangBadge.classList.add('hidden');
@@ -782,9 +1265,11 @@ class GoogleTranslateApp {
            h.targetLang === this.state.targetLang
     );
 
+    let created = false;
     if (match) {
       match.starred = !match.starred;
     } else {
+      created = true;
       match = {
         id: 'h_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
         sourceLang: this.state.sourceLang,
@@ -800,11 +1285,16 @@ class GoogleTranslateApp {
       }
     }
 
-    this.saveHistory();
+    if (created) {
+      this._postHistoryAction({ action: 'upsert', item: match });
+    } else {
+      this._postHistoryAction({ action: 'star', id: match.id, starred: match.starred });
+    }
     this.updateStarBtnState();
     if (this.isHistoryDrawerOpen()) {
       this.renderHistoryList();
     }
+    this._refreshFlashcards();
     this.showToast(match.starred ? 'Đã lưu bản dịch' : 'Đã xóa khỏi danh sách đã lưu');
   }
 
@@ -812,6 +1302,30 @@ class GoogleTranslateApp {
   renderTabs() {
     this._renderSourceTabs();
     this._renderTargetTabs();
+    this._syncTextAreaLangAttributes();
+  }
+
+  _syncTextAreaLangAttributes() {
+    const docLang = (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang)
+      ? document.documentElement.lang
+      : 'vi';
+    const activeSourceLang = this.state.sourceLang === 'auto'
+      ? (this.state.detectedLang || docLang)
+      : (this.state.sourceLang || docLang);
+    const activeTargetLang = this.state.targetLang || docLang;
+
+    if (this.dom.sourceText) {
+      this.dom.sourceText.lang = activeSourceLang;
+    }
+    if (this.dom.targetText) {
+      this.dom.targetText.lang = activeTargetLang;
+    }
+
+    const i18n = typeof window !== 'undefined' ? window.LingoI18n : null;
+    if (i18n && typeof i18n.ensureFont === 'function') {
+      i18n.ensureFont(activeSourceLang);
+      i18n.ensureFont(activeTargetLang);
+    }
   }
 
   _renderSourceTabs() {
@@ -886,6 +1400,13 @@ class GoogleTranslateApp {
     }
 
     this._renderSourceTabs();
+    this._syncTextAreaLangAttributes();
+
+    if (this.dom.sourceText && this.dom.sourceText.value.trim()) {
+      this._scheduleDictionaryLookup(this.dom.sourceText.value.trim());
+    } else {
+      this._clearDictionaryLookup();
+    }
 
     if (triggerTranslate && this.dom.sourceText && this.dom.sourceText.value.trim()) {
       this.performTranslation();
@@ -898,6 +1419,7 @@ class GoogleTranslateApp {
     this.state.targetLang = code;
 
     this._renderTargetTabs();
+    this._syncTextAreaLangAttributes();
 
     if (triggerTranslate && this.dom.sourceText && this.dom.sourceText.value.trim()) {
       this.performTranslation();
@@ -1039,6 +1561,12 @@ class GoogleTranslateApp {
     this.updateCharCount();
     this.updateClearBtn();
 
+    if (this.dom.sourceText && this.dom.sourceText.value.trim()) {
+      this._scheduleDictionaryLookup(this.dom.sourceText.value.trim());
+    } else {
+      this._clearDictionaryLookup();
+    }
+
     // Trigger immediate translation if there is source text
     if (this.dom.sourceText && this.dom.sourceText.value.trim()) {
       this.performTranslation();
@@ -1057,10 +1585,19 @@ class GoogleTranslateApp {
     this.updateCharCount();
     this.updateClearBtn();
 
+    if (this.state.sourceLang === 'auto') {
+      this.state.detectedLang = '';
+    }
+
     if (!this.dom.sourceText.value.trim()) {
+      this.hideSelectionSpotlight();
+      this._clearDictionaryLookup();
+      this.resetPhrasesToDefault();
       this.clearTarget();
       return;
     }
+
+    this._scheduleDictionaryLookup(this.dom.sourceText.value.trim());
 
     // Debounce translation
     if (this.debounceTimer) {
@@ -1070,6 +1607,689 @@ class GoogleTranslateApp {
     this.debounceTimer = setTimeout(() => {
       this.performTranslation();
     }, this.debounceDelay);
+  }
+
+  _getSelectionContext(origin) {
+    const d = this.dom;
+    if (!d) return null;
+
+    let selected = '';
+    let fullText = '';
+    let fromLang = 'auto';
+    let toLang = this.state.targetLang || 'vi';
+
+    if (origin === 'source') {
+      if (!d.sourceText) return null;
+      const start = d.sourceText.selectionStart;
+      const end = d.sourceText.selectionEnd;
+      if (typeof start !== 'number' || typeof end !== 'number' || end <= start) return null;
+      fullText = String(d.sourceText.value || '').trim();
+      selected = String(d.sourceText.value || '').slice(start, end).trim();
+      fromLang = this.state.sourceLang === 'auto'
+        ? (this.state.detectedLang || 'auto')
+        : this.state.sourceLang;
+      toLang = this.state.targetLang || 'vi';
+      if (fromLang !== 'auto' && fromLang === toLang) {
+        toLang = fromLang === 'en' ? 'vi' : 'en';
+      }
+    } else if (origin === 'target') {
+      if (!d.targetText || typeof window === 'undefined' || typeof window.getSelection !== 'function') {
+        return null;
+      }
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
+      const range = sel.getRangeAt(0);
+      if (!range || !d.targetText.contains(range.commonAncestorContainer)) return null;
+      fullText = String(d.targetText.textContent || '').trim();
+      selected = String(sel.toString() || '').trim();
+      fromLang = this.state.targetLang || 'vi';
+      if (this.state.sourceLang && this.state.sourceLang !== 'auto') {
+        toLang = this.state.sourceLang;
+      } else if (this.state.detectedLang && this.state.detectedLang !== 'auto') {
+        toLang = this.state.detectedLang;
+      } else {
+        toLang = fromLang === 'en' ? 'vi' : 'en';
+      }
+      if (toLang === fromLang) {
+        toLang = fromLang === 'en' ? 'vi' : 'en';
+      }
+    } else {
+      return null;
+    }
+
+    if (!selected || selected.length > 60) return null;
+    const selectedWords = selected.split(/\s+/).filter(Boolean);
+    if (selectedWords.length > 4) return null;
+
+    const fullWords = fullText.split(/\s+/).filter(Boolean);
+    if (selected.toLowerCase() === fullText.toLowerCase() && fullWords.length <= 1) {
+      return null;
+    }
+
+    return {
+      origin,
+      selected,
+      fromLang,
+      toLang
+    };
+  }
+
+  scheduleSelectionSpotlight(origin = 'source') {
+    const ctx = this._getSelectionContext(origin);
+    if (!ctx) {
+      if (origin === 'target' && this.dom && this.dom.targetText && typeof window !== 'undefined' && typeof window.getSelection === 'function') {
+        const sel = window.getSelection();
+        if (sel && !sel.isCollapsed && sel.rangeCount > 0) {
+          const range = sel.getRangeAt(0);
+          if (range && this.dom.targetText.contains(range.commonAncestorContainer)) {
+            const selected = String(sel.toString() || '').trim();
+            if (this._isLookupCandidate(selected)) {
+              const targetLang = this.state.targetLang || this._inferLanguageFromText(selected);
+              this._lookupWordImmediate(selected, targetLang);
+            }
+          }
+        }
+      }
+      return;
+    }
+
+    const spotlightEl = this.dom.selectionSpotlight;
+    const isSpotlightVisible = spotlightEl && !spotlightEl.classList.contains('hidden') && !spotlightEl.hasAttribute('hidden');
+    if (
+      isSpotlightVisible &&
+      this.spotlightData &&
+      this.spotlightData.selected === ctx.selected &&
+      this.spotlightData.fromLang === ctx.fromLang &&
+      this.spotlightData.toLang === ctx.toLang
+    ) {
+      return;
+    }
+
+    if (this.spotlightDebounceTimer) {
+      clearTimeout(this.spotlightDebounceTimer);
+    }
+
+    this.spotlightDebounceTimer = setTimeout(() => {
+      this._runSelectionSpotlight(ctx);
+    }, 180);
+  }
+
+  async _runSelectionSpotlight(ctx) {
+    const spotlightEl = this.dom.selectionSpotlight;
+    const translator = this.selectionTranslationService || this.translationService;
+    if (!spotlightEl || !translator || !ctx || !ctx.selected) return;
+
+    const seq = ++this.spotlightSeq;
+    const { selected, fromLang, toLang } = ctx;
+    const isLookupCandidate = this._isLookupCandidate(selected);
+    let immediateLookupTriggered = false;
+
+    if (isLookupCandidate) {
+      if (fromLang && fromLang !== 'auto') {
+        immediateLookupTriggered = true;
+        this._lookupWordImmediate(selected, fromLang);
+      } else {
+        const inferred = this._inferLanguageFromText(selected);
+        if (inferred && inferred !== 'en') {
+          immediateLookupTriggered = true;
+          this._lookupWordImmediate(selected, inferred);
+        }
+      }
+    }
+
+    this.spotlightData = {
+      selected,
+      translated: '',
+      fromLang,
+      toLang
+    };
+
+    spotlightEl.innerHTML =
+      '<div class="spotlight-inner spotlight-loading">' +
+        '<span class="spotlight-badge">Đang chọn</span>' +
+        '<span class="spotlight-word">' + escapeHtml(selected) + '</span>' +
+        '<span class="spotlight-arrow" aria-hidden="true">→</span>' +
+        '<span class="spotlight-status">Đang dịch...</span>' +
+        '<button type="button" class="icon-btn spotlight-close-btn" data-spotlight-action="close" title="Đóng" aria-label="Đóng dịch nhanh">×</button>' +
+      '</div>';
+    spotlightEl.classList.remove('hidden');
+    spotlightEl.removeAttribute('hidden');
+    this._bindSpotlightCloseOnly(spotlightEl);
+
+    try {
+      const result = await translator.translate(selected, fromLang, toLang);
+      if (seq !== this.spotlightSeq) return;
+
+      const translated = (result && result.translatedText ? String(result.translatedText) : '').trim();
+      if (!translated) {
+        if (isLookupCandidate && !immediateLookupTriggered) {
+          const fallbackLang = (fromLang && fromLang !== 'auto') ? fromLang : this._inferLanguageFromText(selected);
+          this._lookupWordImmediate(selected, fallbackLang);
+        }
+        this.hideSelectionSpotlight();
+        return;
+      }
+
+      let resolvedFromLang = fromLang;
+      if (!resolvedFromLang || resolvedFromLang === 'auto') {
+        resolvedFromLang = (result && result.detectedLang) || this._inferLanguageFromText(selected);
+      }
+
+      this.spotlightData = {
+        selected,
+        translated,
+        fromLang: resolvedFromLang,
+        toLang
+      };
+
+      this._renderSelectionSpotlight(this.spotlightData);
+
+      if (isLookupCandidate && !immediateLookupTriggered) {
+        this._lookupWordImmediate(selected, resolvedFromLang);
+      }
+    } catch (err) {
+      if (seq !== this.spotlightSeq) return;
+      if (err && (err.name === 'AbortError' || err.message === 'The user aborted a request.')) {
+        return;
+      }
+      if (isLookupCandidate && !immediateLookupTriggered) {
+        const fallbackLang = (fromLang && fromLang !== 'auto') ? fromLang : this._inferLanguageFromText(selected);
+        this._lookupWordImmediate(selected, fallbackLang);
+      }
+      console.warn('Selection spotlight translation error:', err);
+      spotlightEl.innerHTML =
+        '<div class="spotlight-inner spotlight-error">' +
+          '<span class="spotlight-badge">Đang chọn</span>' +
+          '<span class="spotlight-word">' + escapeHtml(selected) + '</span>' +
+          '<span class="spotlight-status">Không thể dịch nhanh từ này.</span>' +
+          '<button type="button" class="icon-btn spotlight-close-btn" data-spotlight-action="close" title="Đóng" aria-label="Đóng dịch nhanh">×</button>' +
+        '</div>';
+      this._bindSpotlightCloseOnly(spotlightEl);
+    }
+  }
+
+  _bindSpotlightCloseOnly(spotlightEl) {
+    const closeBtn = spotlightEl.querySelector('[data-spotlight-action="close"]');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => this.hideSelectionSpotlight());
+    }
+  }
+
+  _renderSelectionSpotlight(data) {
+    const spotlightEl = this.dom.selectionSpotlight;
+    if (!spotlightEl || !data) return;
+
+    const { selected, translated, fromLang, toLang } = data;
+    const isAlreadyStarred = this.state.history.some(h =>
+      h.starred &&
+      h.sourceText.trim().toLowerCase() === selected.trim().toLowerCase() &&
+      h.targetText.trim().toLowerCase() === translated.trim().toLowerCase()
+    );
+
+    const speakerSvg =
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">' +
+        '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>' +
+      '</svg>';
+
+    spotlightEl.innerHTML =
+      '<div class="spotlight-inner">' +
+        '<div class="spotlight-pair">' +
+          '<span class="spotlight-badge">Đang chọn</span>' +
+          '<span class="spotlight-term">' +
+            '<strong class="spotlight-word">' + escapeHtml(selected) + '</strong>' +
+            '<button type="button" class="icon-btn spotlight-speak-btn" data-spotlight-speak="source" title="Nghe từ đang chọn" aria-label="Nghe từ đang chọn">' + speakerSvg + '</button>' +
+          '</span>' +
+          '<span class="spotlight-arrow" aria-hidden="true">→</span>' +
+          '<span class="spotlight-term">' +
+            '<span class="spotlight-translation">' + escapeHtml(translated) + '</span>' +
+            '<button type="button" class="icon-btn spotlight-speak-btn" data-spotlight-speak="target" title="Nghe nghĩa" aria-label="Nghe nghĩa">' + speakerSvg + '</button>' +
+          '</span>' +
+        '</div>' +
+        '<div class="spotlight-actions">' +
+          '<button type="button" class="spotlight-action-btn spotlight-save-btn' + (isAlreadyStarred ? ' saved' : '') + '" data-spotlight-action="save">' + (isAlreadyStarred ? '★ Đã lưu' : '☆ Lưu từ') + '</button>' +
+          '<button type="button" class="spotlight-action-btn spotlight-solo-btn" data-spotlight-action="solo">Dịch riêng</button>' +
+          '<button type="button" class="icon-btn spotlight-close-btn" data-spotlight-action="close" title="Đóng" aria-label="Đóng dịch nhanh">×</button>' +
+        '</div>' +
+      '</div>';
+
+    spotlightEl.classList.remove('hidden');
+    spotlightEl.removeAttribute('hidden');
+
+    const speakSrcBtn = spotlightEl.querySelector('[data-spotlight-speak="source"]');
+    if (speakSrcBtn) {
+      speakSrcBtn.addEventListener('click', () => this.speakText(selected, fromLang, speakSrcBtn));
+    }
+
+    const speakTgtBtn = spotlightEl.querySelector('[data-spotlight-speak="target"]');
+    if (speakTgtBtn) {
+      speakTgtBtn.addEventListener('click', () => this.speakText(translated, toLang, speakTgtBtn));
+    }
+
+    const saveBtn = spotlightEl.querySelector('[data-spotlight-action="save"]');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        this.addToHistory({
+          sourceLang: fromLang || 'auto',
+          targetLang: toLang || 'vi',
+          sourceText: selected,
+          targetText: translated,
+          starred: true
+        });
+        saveBtn.classList.add('saved');
+        saveBtn.textContent = '★ Đã lưu';
+        this.showToast('Đã lưu từ vào lịch sử & Flashcards');
+      });
+    }
+
+    const soloBtn = spotlightEl.querySelector('[data-spotlight-action="solo"]');
+    if (soloBtn) {
+      soloBtn.addEventListener('click', () => {
+        if (!this.dom.sourceText) return;
+        this.state.sourceLang = fromLang || 'auto';
+        this.state.targetLang = toLang && toLang !== 'auto' ? toLang : 'vi';
+        this.state.detectedLang = '';
+        this.renderTabs();
+        this.dom.sourceText.value = selected;
+        this.hideSelectionSpotlight();
+        this.handleSourceInput();
+        this.performTranslation();
+      });
+    }
+
+    this._bindSpotlightCloseOnly(spotlightEl);
+  }
+
+  hideSelectionSpotlight() {
+    if (this.spotlightDebounceTimer) {
+      clearTimeout(this.spotlightDebounceTimer);
+      this.spotlightDebounceTimer = null;
+    }
+    this.spotlightSeq += 1;
+    this.spotlightData = null;
+
+    if (
+      this.selectionTranslationService &&
+      this.selectionTranslationService !== this.translationService &&
+      typeof this.selectionTranslationService.abort === 'function'
+    ) {
+      this.selectionTranslationService.abort();
+    }
+
+    const spotlightEl = this.dom.selectionSpotlight;
+    if (spotlightEl) {
+      spotlightEl.classList.add('hidden');
+      spotlightEl.setAttribute('hidden', '');
+      spotlightEl.innerHTML = '';
+    }
+  }
+
+  _resolveOppositeLang(srcLang) {
+    const cleanSrc = (srcLang && srcLang !== 'auto') ? String(srcLang).trim() : 'en';
+    const currentTarget = this.state.targetLang;
+    if (currentTarget && currentTarget !== 'auto' && currentTarget !== cleanSrc) {
+      return currentTarget;
+    }
+    if (this.state.sourceLang && this.state.sourceLang !== 'auto' && this.state.sourceLang !== cleanSrc) {
+      return this.state.sourceLang;
+    }
+    if (this.state.detectedLang && this.state.detectedLang !== 'auto' && this.state.detectedLang !== cleanSrc) {
+      return this.state.detectedLang;
+    }
+    return cleanSrc === 'en' ? 'vi' : 'en';
+  }
+
+  _applyPhraseToSource(phrase, srcLang) {
+    if (!phrase || !this.dom.sourceText) return;
+    const nextSource = (srcLang && srcLang !== 'auto')
+      ? String(srcLang).trim()
+      : (this._activeContextLang || this._inferLanguageFromText(phrase) || 'en');
+    const nextTarget = this._resolveOppositeLang(nextSource);
+    this.state.sourceLang = nextSource;
+    this.state.targetLang = nextTarget;
+    this.state.detectedLang = '';
+    this.renderTabs();
+    this.dom.sourceText.value = phrase;
+    this.hideSelectionSpotlight();
+    this.handleSourceInput();
+    this.performTranslation();
+  }
+
+  _resolveDictionaryLang(text, explicitLang = '') {
+    const cleanExplicit = explicitLang ? String(explicitLang).trim() : '';
+    if (cleanExplicit && cleanExplicit !== 'auto') {
+      return cleanExplicit;
+    }
+    if (this.state.sourceLang && this.state.sourceLang !== 'auto') {
+      return this.state.sourceLang;
+    }
+    if (this.state.detectedLang && this.state.detectedLang !== 'auto') {
+      return this.state.detectedLang;
+    }
+    const inferred = this._inferLanguageFromText(text);
+    if (inferred && inferred !== 'en') {
+      return inferred;
+    }
+    return 'auto';
+  }
+
+  _lookupWordImmediate(word, lang = '') {
+    const clean = String(word || '').trim();
+    if (!clean || typeof window === 'undefined' || !window.LingoDictionary || typeof window.LingoDictionary.lookup !== 'function') {
+      return;
+    }
+    if (this.dictionaryDebounceTimer) {
+      clearTimeout(this.dictionaryDebounceTimer);
+      this.dictionaryDebounceTimer = null;
+    }
+    const lookupLang = this._resolveDictionaryLang(clean, lang);
+    const key = lookupLang + ':' + clean.toLowerCase();
+    if (this._lastDictionaryQuery === key) return;
+    this._lastDictionaryQuery = key;
+    window.LingoDictionary.lookup(clean, lookupLang);
+  }
+
+  _highlightWordInPassage(paragraph, word) {
+    const text = String(paragraph || '').normalize('NFC');
+    const cleanWord = String(word || '').trim().normalize('NFC');
+    if (!cleanWord) return escapeHtml(text);
+
+    const escapedRegex = cleanWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const hasNonSpacedScript = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af\u0e00-\u0e7f\u0e80-\u0eff\u1780-\u17ff]/.test(cleanWord);
+    const regex = hasNonSpacedScript
+      ? new RegExp(`(${escapedRegex})`, 'giu')
+      : new RegExp(`(^|[^\\p{L}\\p{M}\\p{N}])(${escapedRegex})(?![\\p{L}\\p{M}\\p{N}])`, 'giu');
+
+    let html = '';
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      const prefix = hasNonSpacedScript ? '' : (match[1] || '');
+      const term = hasNonSpacedScript ? match[1] : match[2];
+      const termStart = match.index + prefix.length;
+
+      if (termStart > lastIndex) {
+        html += escapeHtml(text.slice(lastIndex, termStart));
+      }
+      html += '<mark class="context-highlight">' + escapeHtml(term) + '</mark>';
+      lastIndex = termStart + term.length;
+      if (match[0].length === 0) regex.lastIndex += 1;
+    }
+
+    if (lastIndex < text.length) {
+      html += escapeHtml(text.slice(lastIndex));
+    }
+    return html;
+  }
+
+  handleDictionaryEntryLoaded(data, word, lang) {
+    const d = this.dom;
+    if (!d) return;
+
+    const effectiveLang = (data && typeof data.lang === 'string' && data.lang.trim())
+      ? data.lang.trim()
+      : ((lang && lang !== 'auto') ? String(lang).trim() : (this._activeContextLang || 'en'));
+    this._activeContextLang = effectiveLang;
+
+    const cleanWord = String((data && data.word) || word || '').trim();
+    const rawRelated = Array.isArray(data && data.relatedPhrases) && data.relatedPhrases.length > 0
+      ? data.relatedPhrases
+      : (Array.isArray(data && data.synonyms) ? data.synonyms : []);
+
+    const seen = new Set();
+    const phrases = [];
+    for (const item of rawRelated) {
+      const val = String(item || '').trim();
+      if (!val || seen.has(val.toLowerCase())) continue;
+      seen.add(val.toLowerCase());
+      phrases.push(val);
+      if (phrases.length >= 6) break;
+    }
+
+    if (phrases.length > 0 && d.phraseList) {
+      if (d.phraseSubtitle) {
+        d.phraseSubtitle.textContent = `Cụm từ & đoạn văn liên quan đến “${cleanWord}”`;
+      }
+      if (d.resetPhrasesBtn) {
+        d.resetPhrasesBtn.classList.remove('hidden');
+        d.resetPhrasesBtn.removeAttribute('hidden');
+      }
+      d.phraseList.innerHTML = phrases.map(phrase => (
+        '<button type="button" class="dynamic-phrase-btn" data-phrase="' + escapeHtml(phrase) + '" data-phrase-lang="' + escapeHtml(effectiveLang) + '">' +
+          escapeHtml(phrase) + ' <span aria-hidden="true">↗</span>' +
+        '</button>'
+      )).join('');
+    } else {
+      this._restorePhraseListOnly();
+    }
+
+    const contextParagraph = data && typeof data.contextParagraph === 'string'
+      ? data.contextParagraph.trim()
+      : '';
+
+    if (contextParagraph && d.contextPassageCard) {
+      this._renderContextPassageCard(contextParagraph, cleanWord, effectiveLang);
+    } else {
+      this._hideContextPassageCard();
+    }
+  }
+
+  _renderContextPassageCard(paragraph, word, lang) {
+    const card = this.dom.contextPassageCard;
+    if (!card) return;
+
+    const contextLang = (lang && lang !== 'auto')
+      ? String(lang).trim()
+      : (this._activeContextLang || this._inferLanguageFromText(paragraph) || 'en');
+    const passageSeq = ++this.contextPassageSeq;
+    const highlightedHtml = this._highlightWordInPassage(paragraph, word);
+    const inlineTargetLang = this._resolveOppositeLang(contextLang);
+    const targetLangObj = getLanguageByCode
+      ? (getLanguageByCode(inlineTargetLang) || (inlineTargetLang === 'zh' ? getLanguageByCode('zh-CN') : null))
+      : null;
+    const targetLangLabel = targetLangObj
+      ? `Bản dịch ${targetLangObj.name}`
+      : `Bản dịch (${inlineTargetLang})`;
+
+    const i18n = typeof window !== 'undefined' ? window.LingoI18n : null;
+    if (i18n && typeof i18n.ensureFont === 'function') {
+      i18n.ensureFont(contextLang);
+      i18n.ensureFont(inlineTargetLang);
+    }
+
+    card.innerHTML =
+      '<div class="context-passage-header">' +
+        '<span class="context-passage-badge">Đoạn văn ngữ cảnh · ' + escapeHtml(word) + '</span>' +
+      '</div>' +
+      '<p class="context-passage-text" lang="' + escapeHtml(contextLang) + '">' + highlightedHtml + '</p>' +
+      '<div class="context-passage-actions">' +
+        '<button type="button" class="context-passage-btn" data-passage-action="speak">🔊 Nghe đoạn văn</button>' +
+        '<button type="button" class="context-passage-btn context-passage-btn-primary" data-passage-action="translate-main">Dịch đoạn văn này →</button>' +
+        '<button type="button" class="context-passage-btn" data-passage-action="translate-inline">Dịch nhanh bên dưới</button>' +
+      '</div>' +
+      '<div class="context-passage-inline hidden" hidden></div>';
+
+    card.classList.remove('hidden');
+    card.removeAttribute('hidden');
+
+    const speakBtn = card.querySelector('[data-passage-action="speak"]');
+    if (speakBtn) {
+      speakBtn.addEventListener('click', () => this.speakText(paragraph, this._activeContextLang || contextLang, speakBtn));
+    }
+
+    const translateMainBtn = card.querySelector('[data-passage-action="translate-main"]');
+    if (translateMainBtn) {
+      translateMainBtn.addEventListener('click', () => {
+        this._applyPhraseToSource(paragraph, this._activeContextLang || contextLang);
+      });
+    }
+
+    const translateInlineBtn = card.querySelector('[data-passage-action="translate-inline"]');
+    const inlineBox = card.querySelector('.context-passage-inline');
+    if (translateInlineBtn && inlineBox) {
+      translateInlineBtn.addEventListener('click', async () => {
+        const translator = this.contextTranslationService || this.translationService;
+        if (!translator) return;
+        const srcLang = this._activeContextLang || contextLang;
+        const tgtLang = this._resolveOppositeLang(srcLang);
+        const tgtObj = getLanguageByCode
+          ? (getLanguageByCode(tgtLang) || (tgtLang === 'zh' ? getLanguageByCode('zh-CN') : null))
+          : null;
+        const tgtLabel = tgtObj ? `Bản dịch ${tgtObj.name}` : `Bản dịch (${tgtLang})`;
+
+        translateInlineBtn.disabled = true;
+        inlineBox.innerHTML =
+          '<span class="context-passage-inline-label">' + escapeHtml(tgtLabel) + '</span>' +
+          '<p class="context-passage-inline-text">Đang dịch đoạn văn...</p>';
+        inlineBox.classList.remove('hidden');
+        inlineBox.removeAttribute('hidden');
+
+        try {
+          const res = await translator.translate(paragraph, srcLang, tgtLang);
+          if (passageSeq !== this.contextPassageSeq) return;
+          const translatedText = (res && res.translatedText ? String(res.translatedText) : '').trim();
+          if (!translatedText) {
+            inlineBox.innerHTML =
+              '<span class="context-passage-inline-label">' + escapeHtml(tgtLabel) + '</span>' +
+              '<p class="context-passage-inline-text">Không có kết quả dịch.</p>';
+            return;
+          }
+          inlineBox.innerHTML = '';
+          const labelEl = document.createElement('span');
+          labelEl.className = 'context-passage-inline-label';
+          labelEl.textContent = tgtLabel;
+          const textEl = document.createElement('p');
+          textEl.className = 'context-passage-inline-text';
+          textEl.lang = tgtLang;
+          textEl.textContent = translatedText;
+          inlineBox.appendChild(labelEl);
+          inlineBox.appendChild(textEl);
+        } catch (err) {
+          if (passageSeq !== this.contextPassageSeq) return;
+          if (err && (err.name === 'AbortError' || err.message === 'The user aborted a request.')) {
+            inlineBox.classList.add('hidden');
+            inlineBox.setAttribute('hidden', '');
+            return;
+          }
+          inlineBox.innerHTML =
+            '<span class="context-passage-inline-label">' + escapeHtml(tgtLabel) + '</span>' +
+            '<p class="context-passage-inline-text">Không thể dịch đoạn văn lúc này.</p>';
+        } finally {
+          translateInlineBtn.disabled = false;
+        }
+      });
+    }
+  }
+
+  _hideContextPassageCard() {
+    this.contextPassageSeq += 1;
+    if (
+      this.contextTranslationService &&
+      this.contextTranslationService !== this.translationService &&
+      typeof this.contextTranslationService.abort === 'function'
+    ) {
+      this.contextTranslationService.abort();
+    }
+    const card = this.dom.contextPassageCard;
+    if (card) {
+      card.classList.add('hidden');
+      card.setAttribute('hidden', '');
+      card.innerHTML = '';
+    }
+  }
+
+  _restorePhraseListOnly() {
+    const d = this.dom;
+    if (!d) return;
+    if (d.phraseSubtitle) {
+      const subtitleText = (typeof window !== 'undefined' && window.LingoI18n && typeof window.LingoI18n.t === 'function')
+        ? window.LingoI18n.t('phrase.subtitle', DEFAULT_PHRASE_SUBTITLE)
+        : DEFAULT_PHRASE_SUBTITLE;
+      d.phraseSubtitle.textContent = subtitleText;
+    }
+    if (d.resetPhrasesBtn) {
+      d.resetPhrasesBtn.classList.add('hidden');
+      d.resetPhrasesBtn.setAttribute('hidden', '');
+    }
+    if (d.phraseList) {
+      const phrases = (this.defaultStarterPhrases && this.defaultStarterPhrases.length > 0)
+        ? this.defaultStarterPhrases
+        : DEFAULT_STARTER_PHRASES;
+      d.phraseList.innerHTML = phrases.map(phrase => (
+        '<button type="button" data-phrase="' + escapeHtml(phrase) + '">' +
+          escapeHtml(phrase) + ' <span aria-hidden="true">↗</span>' +
+        '</button>'
+      )).join('');
+    }
+  }
+
+  resetPhrasesToDefault() {
+    this._restorePhraseListOnly();
+    this._hideContextPassageCard();
+  }
+
+  handleDictionaryCleared() {
+    this.resetPhrasesToDefault();
+  }
+
+  handleSourceSelectionLookup() {
+    this.scheduleSelectionSpotlight('source');
+  }
+
+  _isLookupCandidate(text) {
+    if (!text || typeof text !== 'string') return false;
+    const clean = text.trim();
+    if (!clean || clean.length > 45) return false;
+    const words = clean.split(/\s+/).filter(Boolean);
+    if (words.length === 0 || words.length > 3) return false;
+    if (!/\p{L}/u.test(clean)) return false;
+    return /^[\p{L}\p{M}'’\-·・]+(?:\s+[\p{L}\p{M}'’\-·・]+){0,2}$/u.test(clean);
+  }
+
+  _isEnglishLookupCandidate(text) {
+    return this._isLookupCandidate(text);
+  }
+
+  _clearDictionaryLookup() {
+    if (this.dictionaryDebounceTimer) {
+      clearTimeout(this.dictionaryDebounceTimer);
+      this.dictionaryDebounceTimer = null;
+    }
+    this._lastDictionaryQuery = '';
+    if (typeof window !== 'undefined' && window.LingoDictionary && typeof window.LingoDictionary.clear === 'function') {
+      window.LingoDictionary.clear();
+    }
+  }
+
+  _scheduleDictionaryLookup(rawText, fromSelection = false) {
+    if (typeof window === 'undefined' || !window.LingoDictionary || typeof window.LingoDictionary.lookup !== 'function') {
+      return;
+    }
+
+    const clean = (rawText || '').trim();
+    if (!clean) {
+      this._clearDictionaryLookup();
+      return;
+    }
+
+    if (!this._isLookupCandidate(clean)) {
+      if (!fromSelection) {
+        this._clearDictionaryLookup();
+      }
+      return;
+    }
+
+    if (this.dictionaryDebounceTimer) {
+      clearTimeout(this.dictionaryDebounceTimer);
+    }
+
+    this.dictionaryDebounceTimer = setTimeout(() => {
+      const lookupLang = this._resolveDictionaryLang(clean);
+      const queryKey = lookupLang + ':' + clean.toLowerCase();
+      if (this._lastDictionaryQuery === queryKey) return;
+      this._lastDictionaryQuery = queryKey;
+      window.LingoDictionary.lookup(clean, lookupLang);
+    }, 420);
   }
 
   updateCharCount() {
@@ -1100,6 +2320,9 @@ class GoogleTranslateApp {
       this.dom.sourceText.focus();
     }
 
+    this.hideSelectionSpotlight();
+    this._clearDictionaryLookup();
+    this.resetPhrasesToDefault();
     this.clearTarget();
     this.updateCharCount();
     this.updateClearBtn();
@@ -1129,6 +2352,7 @@ class GoogleTranslateApp {
     }
 
     this.state.detectedLang = '';
+    this._syncTextAreaLangAttributes();
     this.updateStarBtnState();
   }
 
@@ -1174,9 +2398,20 @@ class GoogleTranslateApp {
           this.dom.detectedLangBadge.textContent = `Đã phát hiện: ${langName}`;
           this.dom.detectedLangBadge.classList.remove('hidden');
         }
+        const st = this.dom.sourceText;
+        const hasSelection = st && typeof st.selectionStart === 'number' && typeof st.selectionEnd === 'number' && st.selectionEnd > st.selectionStart;
+        if (!hasSelection) {
+          if (this._isLookupCandidate(text)) {
+            this._scheduleDictionaryLookup(text);
+          } else {
+            this._clearDictionaryLookup();
+          }
+        }
       } else if (this.dom.detectedLangBadge) {
         this.dom.detectedLangBadge.classList.add('hidden');
       }
+
+      this._syncTextAreaLangAttributes();
 
       // Record to history
       if (result.translatedText) {
@@ -1248,6 +2483,45 @@ class GoogleTranslateApp {
     return chunks.length > 0 ? chunks : [text.slice(0, maxLen)];
   }
 
+  _inferLanguageFromText(text) {
+    if (!text || typeof text !== 'string') return 'en';
+    const sample = text.trim();
+    if (!sample) return 'en';
+    if (/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(sample)) {
+      return 'vi';
+    }
+    if (/[\u3040-\u309f\u30a0-\u30ff]/.test(sample)) return 'ja';
+    if (/[\uac00-\ud7af\u1100-\u11ff]/.test(sample)) return 'ko';
+    if (/[\u4e00-\u9fff]/.test(sample)) return 'zh-CN';
+    if (/[\u0400-\u04ff]/.test(sample)) return 'ru';
+    if (/[\u0600-\u06ff]/.test(sample)) return 'ar';
+    if (/[\u0e00-\u0e7f]/.test(sample)) return 'th';
+    return 'en';
+  }
+
+  _resolveSourceTtsLang(text) {
+    if (this.state.sourceLang && this.state.sourceLang !== 'auto') {
+      return this.state.sourceLang;
+    }
+    if (this.state.detectedLang && this.state.detectedLang !== 'auto') {
+      return this.state.detectedLang;
+    }
+    return this._inferLanguageFromText(text);
+  }
+
+  speakText(text, langCode, btn = null) {
+    const cleanText = typeof text === 'string' ? text.trim() : '';
+    if (!cleanText) return;
+
+    let resolvedLang = langCode;
+    if (!resolvedLang || resolvedLang === 'auto') {
+      resolvedLang = this._inferLanguageFromText(cleanText);
+    }
+
+    const chunks = this.splitTextForTts(cleanText);
+    this._playTtsQueue(chunks, resolvedLang, btn);
+  }
+
   handleTts(type) {
     const isSource = type === 'source';
     const text = isSource
@@ -1256,7 +2530,7 @@ class GoogleTranslateApp {
 
     const btn = isSource ? this.dom.sourceListenBtn : this.dom.targetListenBtn;
 
-    // Toggle stop if already speaking
+    // Toggle stop if already speaking from this button
     if (this.state.isSpeaking) {
       const wasSameBtn = this.currentSpeakingBtn === btn;
       this._stopSpeakingUI();
@@ -1267,22 +2541,19 @@ class GoogleTranslateApp {
 
     if (!text) return;
 
-    let langCode = isSource
-      ? (this.state.sourceLang === 'auto' ? (this.state.detectedLang || 'vi') : this.state.sourceLang)
-      : this.state.targetLang;
+    const langCode = isSource
+      ? this._resolveSourceTtsLang(text)
+      : (this.state.targetLang || 'vi');
 
-    if (!langCode || langCode === 'auto') langCode = 'vi';
-
-    const chunks = this.splitTextForTts(text);
-    this._playTtsQueue(chunks, langCode, btn);
+    this.speakText(text, langCode, btn);
   }
 
   _playTtsQueue(chunks, langCode, btn) {
     this._stopSpeakingUI();
 
     this.state.isSpeaking = true;
-    this.currentSpeakingBtn = btn;
-    if (btn) btn.classList.add('speaking');
+    this.currentSpeakingBtn = btn || null;
+    if (btn && btn.classList) btn.classList.add('speaking');
 
     const playSessionId = ++this.ttsSessionCounter;
     let chunkIndex = 0;
@@ -1298,54 +2569,27 @@ class GoogleTranslateApp {
       }
 
       const chunk = chunks[chunkIndex++];
-      const q = encodeURIComponent(chunk);
-      const tl = encodeURIComponent(langCode);
-      const isHttp = typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http');
-      const audioUrl = isHttp
-        ? `/api/tts?tl=${tl}&q=${q}`
-        : `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${tl}&q=${q}`;
+      const matchedVoice = this.findBestVoice(langCode);
 
-      const audio = new Audio(audioUrl);
-      this.currentAudio = audio;
-
-      audio.onended = () => {
-        if (this.ttsSessionCounter === playSessionId) {
-          playNextChunk();
-        }
-      };
-
-      audio.onerror = () => {
-        if (this.ttsSessionCounter !== playSessionId) return;
-        console.warn('Google TTS audio failed, trying Web Speech fallback');
-        this._playWebSpeechFallback(chunk, langCode, btn, () => {
-          if (this.ttsSessionCounter === playSessionId) {
-            playNextChunk();
-          }
+      if (matchedVoice && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        this._playWebSpeechChunk(chunk, langCode, playSessionId, matchedVoice, playNextChunk, () => {
+          this._playProxyTtsChunk(chunk, langCode, playSessionId, playNextChunk, true);
         });
-      };
-
-      audio.play().catch(err => {
-        if (this.ttsSessionCounter !== playSessionId) return;
-        if (err.name === 'AbortError') return; // User stopped speech manually
-        console.warn('Audio play() rejected, trying Web Speech fallback:', err);
-        this._playWebSpeechFallback(chunk, langCode, btn, () => {
-          if (this.ttsSessionCounter === playSessionId) {
-            playNextChunk();
-          }
-        });
-      });
+      } else {
+        this._playProxyTtsChunk(chunk, langCode, playSessionId, playNextChunk, false);
+      }
     };
 
     playNextChunk();
   }
 
-  _playWebSpeechFallback(text, langCode, btn, onComplete) {
+  _playWebSpeechChunk(text, langCode, playSessionId, matchedVoice, onNext, onFallback) {
     const hasSpeechSynthesis = typeof window !== 'undefined' && 'speechSynthesis' in window;
     const UtteranceClass = (typeof window !== 'undefined' && window.SpeechSynthesisUtterance) ||
       (typeof SpeechSynthesisUtterance !== 'undefined' ? SpeechSynthesisUtterance : null);
 
     if (!hasSpeechSynthesis || !UtteranceClass) {
-      if (onComplete) onComplete();
+      if (onFallback) onFallback();
       else this._stopSpeakingUI();
       return;
     }
@@ -1355,27 +2599,133 @@ class GoogleTranslateApp {
       const utterance = new UtteranceClass(text);
       this.currentUtterance = utterance;
       utterance.lang = bcp47;
-
-      const voice = this.findBestVoice(langCode);
-      if (voice) utterance.voice = voice;
+      if (matchedVoice) {
+        utterance.voice = matchedVoice;
+      }
 
       utterance.onend = () => {
-        if (onComplete) onComplete();
+        if (this.ttsSessionCounter !== playSessionId) return;
+        this.currentUtterance = null;
+        if (onNext) onNext();
         else this._stopSpeakingUI();
       };
 
       utterance.onerror = (e) => {
+        if (this.ttsSessionCounter !== playSessionId) return;
+        this.currentUtterance = null;
+        if (e && (e.error === 'canceled' || e.error === 'interrupted')) return;
         console.warn('SpeechSynthesis error:', e);
-        if (onComplete) onComplete();
-        else this._stopSpeakingUI();
+        if (onFallback) {
+          onFallback();
+        } else if (onNext) {
+          onNext();
+        } else {
+          this._stopSpeakingUI();
+        }
       };
 
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(utterance);
     } catch (err) {
       console.warn('SpeechSynthesis invocation error:', err);
-      if (onComplete) onComplete();
+      if (this.ttsSessionCounter !== playSessionId) return;
+      if (onFallback) onFallback();
       else this._stopSpeakingUI();
+    }
+  }
+
+  async _playProxyTtsChunk(text, langCode, playSessionId, onNext, skipWebSpeechFallback) {
+    if (this.ttsSessionCounter !== playSessionId) return;
+
+    const isHttp = typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http');
+    const canTryProxy = isHttp && this._ttsProxyAvailable !== false && typeof fetch === 'function';
+
+    if (!canTryProxy) {
+      if (!skipWebSpeechFallback) {
+        const hasSpeech = typeof window !== 'undefined' && 'speechSynthesis' in window;
+        if (hasSpeech) {
+          this._playWebSpeechChunk(text, langCode, playSessionId, null, onNext, () => {
+            this._stopSpeakingUI();
+            this.showToast('Trình duyệt không hỗ trợ phát âm ngôn ngữ này.');
+          });
+          return;
+        }
+      }
+      this._stopSpeakingUI();
+      this.showToast('Không thể phát âm thanh trên trình duyệt này.');
+      return;
+    }
+
+    const q = encodeURIComponent(text);
+    const tl = encodeURIComponent(langCode);
+    const ttsUrl = `api/tts.php?tl=${tl}&q=${q}`;
+
+    try {
+      const response = await fetch(ttsUrl);
+      if (this.ttsSessionCounter !== playSessionId) return;
+
+      const contentType = this._getResponseContentType(response);
+      if (!response.ok || !contentType.startsWith('audio/')) {
+        if (response.status === 404 || contentType.includes('text/html')) {
+          this._ttsProxyAvailable = false;
+        }
+        throw new Error(`TTS proxy unavailable (${response.status})`);
+      }
+
+      this._ttsProxyAvailable = true;
+      const blob = await response.blob();
+      if (this.ttsSessionCounter !== playSessionId) return;
+
+      const objectUrl = URL.createObjectURL(blob);
+      const audio = new Audio(objectUrl);
+      this.currentAudio = audio;
+      this.currentAudioUrl = objectUrl;
+
+      const cleanupAudio = () => {
+        if (this.currentAudio === audio) {
+          this.currentAudio = null;
+        }
+        if (this.currentAudioUrl === objectUrl) {
+          this.currentAudioUrl = null;
+        }
+        try { URL.revokeObjectURL(objectUrl); } catch (_) {}
+      };
+
+      audio.onended = () => {
+        cleanupAudio();
+        if (this.ttsSessionCounter === playSessionId) {
+          onNext();
+        }
+      };
+
+      audio.onerror = () => {
+        cleanupAudio();
+        if (this.ttsSessionCounter !== playSessionId) return;
+        if (!skipWebSpeechFallback) {
+          this._playWebSpeechChunk(text, langCode, playSessionId, null, onNext, () => {
+            this._stopSpeakingUI();
+            this.showToast('Không thể phát âm thanh.');
+          });
+        } else {
+          this._stopSpeakingUI();
+          this.showToast('Không thể phát âm thanh.');
+        }
+      };
+
+      await audio.play();
+    } catch (err) {
+      if (this.ttsSessionCounter !== playSessionId) return;
+      if (err && err.name === 'AbortError') return;
+      console.warn('TTS proxy failed:', err);
+      if (!skipWebSpeechFallback && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        this._playWebSpeechChunk(text, langCode, playSessionId, null, onNext, () => {
+          this._stopSpeakingUI();
+          this.showToast('Không thể phát âm thanh.');
+        });
+      } else {
+        this._stopSpeakingUI();
+        this.showToast('Không thể phát âm thanh.');
+      }
     }
   }
 
@@ -1385,10 +2735,28 @@ class GoogleTranslateApp {
 
     if (this.currentAudio) {
       try {
+        this.currentAudio.onended = null;
+        this.currentAudio.onerror = null;
         this.currentAudio.pause();
         this.currentAudio.currentTime = 0;
+        this.currentAudio.removeAttribute('src');
       } catch (_) {}
       this.currentAudio = null;
+    }
+
+    if (this.currentAudioUrl && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+      try {
+        URL.revokeObjectURL(this.currentAudioUrl);
+      } catch (_) {}
+      this.currentAudioUrl = null;
+    }
+
+    if (this.currentUtterance) {
+      try {
+        this.currentUtterance.onend = null;
+        this.currentUtterance.onerror = null;
+      } catch (_) {}
+      this.currentUtterance = null;
     }
 
     if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -1399,8 +2767,10 @@ class GoogleTranslateApp {
 
     if (this.dom.sourceListenBtn) this.dom.sourceListenBtn.classList.remove('speaking');
     if (this.dom.targetListenBtn) this.dom.targetListenBtn.classList.remove('speaking');
+    if (this.currentSpeakingBtn && this.currentSpeakingBtn.classList) {
+      this.currentSpeakingBtn.classList.remove('speaking');
+    }
     this.currentSpeakingBtn = null;
-    this.currentUtterance = null;
   }
 
   findBestVoice(langCode) {
@@ -1422,42 +2792,110 @@ class GoogleTranslateApp {
   }
 
 
+  _isServerOcrFallbackStatus(status) {
+    return status === 404 || status === 405 || status === 501 || status === 502 || status === 503;
+  }
+
+  async _tryServerOcr(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const requestInit = {
+      method: 'POST',
+      headers: { 'Content-Type': file.type || 'application/octet-stream' },
+      body: arrayBuffer
+    };
+
+    const endpoints = ['/api/ocr', 'api/ocr'];
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(endpoint, requestInit);
+        const contentType = this._getResponseContentType(response);
+        if (!this._isServerOcrFallbackStatus(response.status) && contentType.includes('application/json')) {
+          return response;
+        }
+      } catch (_) {}
+    }
+
+    return null;
+  }
+
+  _applyOcrText(text) {
+    const cleanText = typeof text === 'string' ? text.trim() : '';
+    if (!cleanText) {
+      this.showToast('Không tìm thấy chữ trong ảnh.');
+      return;
+    }
+
+    if (this.dom.sourceText) {
+      this.dom.sourceText.value = cleanText;
+      this.handleSourceInput();
+    }
+    this.performTranslation();
+    this.showToast('Đã nhận diện chữ từ ảnh thành công!');
+  }
+
   async handleImageFile(file) {
     if (!file) return;
+    if (file.type && !file.type.startsWith('image/')) {
+      this.showToast('Vui lòng chọn tệp hình ảnh hợp lệ. / Please select a valid image file.');
+      return;
+    }
+
+    const setOcrSpinner = (visible) => {
+      if (this.dom.loadingSpinner) {
+        this.dom.loadingSpinner.classList.toggle('hidden', !visible);
+      }
+    };
+
     this.showToast('Đang nhận diện chữ từ ảnh (Google Lens)...');
-    if (this.dom.loadingSpinner) {
-      this.dom.loadingSpinner.classList.remove('hidden');
+    setOcrSpinner(true);
+
+    const ocrUnavailableMsg = 'Dịch vụ OCR cần máy chủ Node. Hãy chạy "npm start" trong thư mục translate-web/. (OCR requires the Node server: run "npm start" in translate-web/.)';
+
+    try {
+      const response = await this._tryServerOcr(file);
+      if (response) {
+        const data = await response.json().catch(() => null);
+        setOcrSpinner(false);
+
+        if (response.ok && data && data.success) {
+          this._applyOcrText(data.text);
+        } else {
+          this.showToast((data && data.error) || 'Không tìm thấy chữ trong ảnh.');
+        }
+        return;
+      }
+    } catch (serverErr) {
+      console.warn('Server OCR unavailable, falling back to browser OCR:', serverErr);
     }
 
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const response = await fetch('/api/ocr', {
-        method: 'POST',
-        headers: { 'Content-Type': file.type || 'application/octet-stream' },
-        body: arrayBuffer
-      });
-      const data = await response.json();
-
-      if (this.dom.loadingSpinner) {
-        this.dom.loadingSpinner.classList.add('hidden');
+      const lingoOcr = typeof window !== 'undefined' ? window.LingoOcr : (typeof global !== 'undefined' ? global.LingoOcr : null);
+      if (!lingoOcr || typeof lingoOcr.recognize !== 'function') {
+        throw new Error('LingoOcr is unavailable');
       }
 
-      if (data.success && data.text) {
-        if (this.dom.sourceText) {
-          this.dom.sourceText.value = data.text;
-          this.handleSourceInput();
+      let lastToastAt = 0;
+      let lastToastPct = -1;
+      const progressCb = (pct) => {
+        const normalized = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
+        if (normalized === lastToastPct) return;
+        const now = Date.now();
+        if (lastToastAt === 0 || (now - lastToastAt >= 1200 && Math.abs(normalized - lastToastPct) >= 15) || normalized === 100) {
+          lastToastAt = now;
+          lastToastPct = normalized;
+          this.showToast(`Đang nhận diện chữ trên trình duyệt (OCR)... ${normalized}%`, 1800);
         }
-        this.showToast('Đã nhận diện chữ thành công!');
-        this.performTranslation();
-      } else {
-        this.showToast(data.error || 'Không tìm thấy chữ trong ảnh');
-      }
+      };
+
+      progressCb(0);
+      const sourceLang = this.state ? this.state.sourceLang : 'auto';
+      const ocrResult = await lingoOcr.recognize(file, sourceLang, progressCb);
+      setOcrSpinner(false);
+      this._applyOcrText(ocrResult && ocrResult.text);
     } catch (err) {
-      if (this.dom.loadingSpinner) {
-        this.dom.loadingSpinner.classList.add('hidden');
-      }
+      setOcrSpinner(false);
       console.error('Image OCR Error:', err);
-      this.showToast('Không thể kết nối dịch vụ OCR máy chủ. Vui lòng chạy node server.mjs');
+      this.showToast(ocrUnavailableMsg, 5000);
     }
   }
 
@@ -1528,9 +2966,15 @@ class GoogleTranslateApp {
 let defaultApp = null;
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   const initApp = () => {
-    defaultApp = new GoogleTranslateApp();
-    defaultApp.init();
-    window.app = defaultApp;
+    try {
+      defaultApp = new GoogleTranslateApp();
+      window.app = defaultApp;
+      Promise.resolve(defaultApp.init()).catch(err => {
+        console.warn('App init failed:', err);
+      });
+    } catch (err) {
+      console.warn('App startup error:', err);
+    }
   };
 
   if (document.readyState === 'loading') {

@@ -46,9 +46,9 @@
   --radius-full: 9999px;
   --radius-circle: 50%;
 
-  --font-sans:
-    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Lora", "Noto Serif", serif;
+  --font-ui: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-ui);
 
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -95,6 +95,27 @@
     0 4px 12px 3px rgba(0, 0, 0, 0.5), 0 2px 4px 0 rgba(0, 0, 0, 0.4);
   --modal-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
   --drawer-shadow: -4px 0 28px 0 rgba(0, 0, 0, 0.6);
+}
+
+html[lang="ja"] {
+  --font-display: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", "Lora", serif;
+  --font-ui: "Noto Sans JP", "Hiragino Sans", "Meiryo", "Yu Gothic", "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+}
+
+html[lang="ko"] {
+  --font-display: "Noto Serif KR", "Batang", "AppleMyungjo", "Lora", serif;
+  --font-ui: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+}
+
+html[lang="zh"],
+html[lang="zh-CN"] {
+  --font-display: "Noto Serif SC", "Songti SC", "SimSun", "Lora", serif;
+  --font-ui: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+}
+
+html[lang="zh-TW"] {
+  --font-display: "Noto Serif TC", "PingFang TC", "PMingLiU", "Lora", serif;
+  --font-ui: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
 }
 
 *,
@@ -209,6 +230,8 @@ body {
 .header-left {
   display: flex;
   align-items: center;
+  gap: 14px;
+  min-width: 0;
 }
 
 .app-logo {
@@ -217,6 +240,7 @@ body {
   gap: 10px;
   text-decoration: none;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .logo-icon {
@@ -1201,6 +1225,7 @@ body {
   --studio-heading: #315d4c;
   --studio-accent: #d48e6e;
   --studio-rule: #aaa99c;
+  --studio-grid-line: rgba(0, 0, 0, 0.11);
   --primary: #436e5c;
   --primary-hover: #345b4a;
 }
@@ -1218,12 +1243,16 @@ body {
   --primary-container: #293c32;
   --on-primary-container: #c2dacb;
   --studio-heading: #53816b;
+  --studio-grid-line: rgba(255, 255, 255, 0.13);
 }
 body {
   background:
+    linear-gradient(var(--studio-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--studio-grid-line) 1px, transparent 1px),
     radial-gradient(ellipse at 88% 12%, #8c493321, transparent 42%),
     var(--background);
-  font-family: "Trebuchet MS", Arial, sans-serif;
+  background-size: 30px 30px, 30px 30px, auto, auto;
+  font-family: var(--font-ui);
   min-height: 100vh;
 }
 .app-header {
@@ -1241,16 +1270,15 @@ body {
 .logo-icon {
   background: #284e40;
   color: #dae6db;
-  padding: 7px;
-  width: 33px;
-  height: 33px;
-  border-radius: 9px;
+  padding: 8px;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
 }
 .logo-title,
 .logo-title .brand-name {
   font:
-    bold 22px Georgia,
-    serif;
+    bold 25px var(--font-display);
   color: var(--studio-heading);
   letter-spacing: -0.6px;
 }
@@ -1274,7 +1302,12 @@ body {
   letter-spacing: 1.3px;
   text-transform: uppercase;
   color: var(--text-secondary);
-  margin-right: 8px;
+  white-space: nowrap;
+}
+@media (max-width: 1099px) {
+  .brand-tagline {
+    display: none;
+  }
 }
 .app-main {
   width: 88%;
@@ -1297,9 +1330,7 @@ body {
 }
 .studio-intro h1 {
   font:
-    bold clamp(36px, 4.45vw, 56px)/1.18 Georgia,
-    "Times New Roman",
-    serif;
+    bold clamp(36px, 4.45vw, 56px)/1.18 var(--font-display);
   letter-spacing: -1.6px;
   color: var(--studio-heading);
   margin: 0 0 18px;
@@ -1318,9 +1349,8 @@ body {
   align-items: center;
   gap: 17px;
   font:
-    64px Georgia,
-    serif;
-  color: #c5cfbb;
+    64px var(--font-display);
+  color: #7d9685;
 }
 .language-art i {
   width: 50px;
@@ -1328,8 +1358,19 @@ body {
   background: #8d8a7c;
 }
 .language-art span:last-child {
-  color: var(--studio-accent);
+  color: #d48e6e;
   font-size: 60px;
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", var(--font-display);
+}
+[data-theme="light"] .language-art {
+  color: #2b5948;
+}
+[data-theme="light"] .language-art i {
+  height: 1.5px;
+  background: #6a7265;
+}
+[data-theme="light"] .language-art span:last-child {
+  color: #b8552d;
 }
 .workspace-card {
   border: 1px solid var(--studio-rule);
@@ -1409,6 +1450,38 @@ body {
   line-height: 1.6;
   min-height: 150px;
 }
+.source-textarea:lang(vi),
+.target-text:lang(vi),
+.source-textarea:lang(en),
+.target-text:lang(en) {
+  font-family: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+.source-textarea:lang(ja),
+.target-text:lang(ja) {
+  font-family: "Noto Sans JP", "Hiragino Sans", "Meiryo", "Yu Gothic", var(--font-ui);
+}
+.source-textarea:lang(ko),
+.target-text:lang(ko) {
+  font-family: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", var(--font-ui);
+}
+.source-textarea:lang(zh),
+.target-text:lang(zh),
+.source-textarea:lang(zh-CN),
+.target-text:lang(zh-CN) {
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", var(--font-ui);
+}
+.source-textarea:lang(zh-TW),
+.target-text:lang(zh-TW) {
+  font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", var(--font-ui);
+}
+.source-textarea:lang(th),
+.target-text:lang(th) {
+  font-family: "Noto Sans Thai", "Leelawadee UI", "Thonburi", var(--font-ui);
+}
+.source-textarea:lang(ar),
+.target-text:lang(ar) {
+  font-family: "Noto Sans Arabic", "Segoe UI", "Tahoma", var(--font-ui);
+}
 .source-textarea::placeholder {
   color: var(--text-secondary);
 }
@@ -1453,8 +1526,7 @@ body {
   border-radius: 10px;
   padding: 11px 18px;
   font:
-    bold 12px "Trebuchet MS",
-    sans-serif;
+    bold 12px var(--font-ui);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -1464,6 +1536,9 @@ body {
 }
 .translate-phrase-btn span {
   padding-left: 5px;
+}
+.translate-phrase-btn .translate-btn-label {
+  padding-left: 0;
 }
 .translate-phrase-btn:hover {
   background: #5a836e;
@@ -1526,8 +1601,7 @@ body {
 }
 .phrase-heading h2 {
   font:
-    bold 24px Georgia,
-    serif;
+    bold 24px var(--font-display);
   color: var(--studio-heading);
   margin: 0;
 }
@@ -1549,8 +1623,7 @@ body {
   color: #365347;
   cursor: pointer;
   font:
-    12px "Trebuchet MS",
-    sans-serif;
+    12px var(--font-ui);
 }
 .phrase-list button span {
   margin-left: 5px;
@@ -1584,6 +1657,16 @@ textarea:focus-visible,
 @media (max-width: 760px) {
   .app-header {
     padding: 0 5%;
+  }
+  .logo-icon {
+    width: 34px;
+    height: 34px;
+    padding: 6px;
+    border-radius: 9px;
+  }
+  .logo-title,
+  .logo-title .brand-name {
+    font-size: 20px;
   }
   .brand-tagline {
     display: none;
@@ -1668,6 +1751,16 @@ textarea:focus-visible,
   }
 }
 @media (max-width: 480px) {
+  .logo-icon {
+    width: 30px;
+    height: 30px;
+    padding: 5px;
+    border-radius: 8px;
+  }
+  .logo-title,
+  .logo-title .brand-name {
+    font-size: 16px;
+  }
   .language-art {
     display: none;
   }

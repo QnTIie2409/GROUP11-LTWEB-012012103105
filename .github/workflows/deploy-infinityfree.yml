@@ -1,0 +1,45 @@
+name: Deploy to InfinityFree
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: FTP Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Exclude dev/Node/secret files so FTP sync never uploads them or deletes live server config.local.php.
+      - name: Sync files to InfinityFree via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /lingostudio.ifree.page/htdocs/
+          dangerous-clean-slate: false
+          exclude: |
+            .git*
+            .git*/**
+            .github/**
+            translate-web/node_modules/**
+            translate-web/*.mjs
+            translate-web/package.json
+            translate-web/package-lock.json
+            translate-web/api/config.local.php
+            translate-web/api/README.md
+            translate-web/database/**
+            slide/**
+            scripts/**
+            dist-infinityfree/**
+            dist-infinityfree.zip
+            translate-web.zip
+            AI_WORK_PLAN.md
+            DEPLOY_INFINITYFREE.md
+            README.md
+            **/*.psd
